@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
+import AromaPage from "./pages/AromaPage";
 import BrandPage from "./pages/BrandPage";
 
 export default function App() {
@@ -7,7 +8,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/aroma" element={<BrandPage brandKey="aroma" />} />
+        <Route path="/aroma" element={<AromaPage />} />
         <Route path="/covy" element={<BrandPage brandKey="covy" />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

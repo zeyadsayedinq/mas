@@ -4,17 +4,14 @@ import Hero from "../components/Hero";
 import About from "../components/About";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
-import { BRANDS, type BrandKey } from "../brands";
+import { BRANDS } from "../brands";
 import { useSmoothCursor } from "../hooks/useSmoothCursor";
 
 interface BrandPageProps {
-  brandKey: Extract<BrandKey, "aroma" | "covy">;
+  brandKey: "covy";
 }
 
-/**
- * Aroma Lounge and COVY run through this one component. Same layout and same
- * motion as the parent page, different tokens and different copy.
- */
+/** COVY. Aroma has its own page since it runs light and carries more. */
 export default function BrandPage({ brandKey }: BrandPageProps) {
   const brand = BRANDS[brandKey];
   const cursor = useSmoothCursor();
@@ -27,7 +24,7 @@ export default function BrandPage({ brandKey }: BrandPageProps) {
   return (
     <div
       className="min-h-screen tracking-[-0.02em]"
-      style={{ fontFamily: "'Inter', sans-serif", background: brand.cupDim.bgBot }}
+      style={{ fontFamily: "'Inter', sans-serif", background: brand.ui.bg }}
     >
       <Nav brand={brand} showParentLink />
       <Hero brand={brand} cursor={cursor} ctaTarget="about" />

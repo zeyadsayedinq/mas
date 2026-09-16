@@ -115,7 +115,7 @@ export default function Brands({ parent, cursor }: BrandsProps) {
     <section
       id="brands"
       className="relative px-5 sm:px-10 md:px-14 py-24 sm:py-32"
-      style={{ background: parent.cupDim.bgMid }}
+      style={{ background: parent.ui.bgAlt }}
     >
       <div className="mx-auto max-w-6xl">
         <Reveal>
@@ -123,24 +123,24 @@ export default function Brands({ parent, cursor }: BrandsProps) {
             className="text-[11px] uppercase tracking-[0.22em] mb-6"
             style={{ color: parent.accent }}
           >
-            Our brands
+            Owned brands
           </p>
         </Reveal>
 
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 sm:mb-16">
           <Reveal delay={0.06}>
-            <h2 className="text-white leading-[1.0] tracking-[-0.03em]">
+            <h2 className="leading-[1.0] tracking-[-0.03em]" style={{ color: parent.ui.text }}>
               <span className="block font-playfair italic text-4xl sm:text-6xl md:text-7xl">
-                Two rooms,
+                Two brands,
               </span>
               <span className="block text-4xl sm:text-6xl md:text-7xl tracking-[-0.05em]">
-                one house.
+                both ours.
               </span>
             </h2>
           </Reveal>
 
           <Reveal delay={0.12}>
-            <p className="text-white/60 text-sm sm:text-[15px] leading-relaxed max-w-xs">
+            <p className="text-sm sm:text-[15px] leading-relaxed max-w-xs" style={{ color: parent.ui.textMuted }}>
               {hasHover
                 ? "Run your cursor over either one. They light up in their own colours, which is roughly what happens when you walk in."
                 : "Two brands under the group, each with its own room and its own regulars."}

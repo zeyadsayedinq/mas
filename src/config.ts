@@ -1,4 +1,8 @@
 /**
+ * Everything that needs filling in before launch lives in this file.
+ */
+
+/**
  * PASTE YOUR FORMSPREE ENDPOINT HERE.
  *
  * 1. Create a free account at https://formspree.io
@@ -6,15 +10,14 @@
  *      https://formspree.io/f/xdorwkgy
  * 3. Replace the empty string below with that full URL.
  *
- * Until this is filled in, the form still validates and shows its success
- * state, but nothing is sent. Check the browser console and you will see the
- * payload it would have submitted.
+ * Until this is filled in, the contact form still validates and shows its
+ * success state, and logs the payload it would have sent to the console.
  */
 export const FORMSPREE_ENDPOINT = "";
 
 /**
- * PLACEHOLDER CONTACT DETAILS. Replace these with the real ones before launch.
- * They appear in the footer of all three pages.
+ * PLACEHOLDER CONTACT DETAILS for the group. Replace before launch.
+ * Branch level phone numbers live in `src/branches.ts`.
  */
 export const CONTACT_DETAILS = {
   email: "hello@masegypt.com",
@@ -22,8 +25,37 @@ export const CONTACT_DETAILS = {
   address: "Cairo, Egypt",
 };
 
-/** Radius of the cursor spotlight, in pixels. */
+/**
+ * PLACEHOLDER SOCIAL HANDLES. Put the real ones in without the @ and the links
+ * appear in the nav and footer. Leave a value empty and that link is hidden.
+ */
+export const SOCIAL = {
+  mas: { instagram: "" },
+  aroma: { instagram: "" },
+  covy: { instagram: "" },
+};
+
+/** Radius of the cursor spotlight on the dark pages, in pixels. */
 export const SPOTLIGHT_R = 260;
 
 /** Radius of the smaller spotlight used on the brand split panels. */
 export const PANEL_SPOTLIGHT_R = 300;
+
+/**
+ * The reservation form is a front end mockup. Nothing is stored.
+ *
+ * On submit it shows a confirmation with a reference code, and hands off to
+ * WhatsApp with the booking prefilled, which is how most people in Cairo
+ * actually confirm a table. Wire it to a real booking system later by
+ * replacing the submit handler in `src/components/Reservation.tsx`.
+ */
+export const RESERVATION = {
+  /** Slots offered, in 24h. */
+  slots: [
+    "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
+    "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",
+  ],
+  maxPartySize: 12,
+  /** How many days ahead the date picker offers. */
+  daysAhead: 14,
+};

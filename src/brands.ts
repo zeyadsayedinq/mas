@@ -4,11 +4,18 @@
  * MAS Egypt is the parent. Aroma Lounge and COVY sit under it.
  * All three share the same layout, type and motion. Only these tokens change.
  *
+ * MAS and COVY are dark. Aroma is the daytime brand, so it runs light. Same
+ * system, inverted palette, which is why every component reads its colours
+ * from `ui` rather than hardcoding white.
+ *
  * Colours come from the MAS palette:
  *   3E2723 espresso   A1663A caramel   D9C3A5 sand
  *   F5EFE6 cream      4F6F52 sage
  */
 
+import masLogo from "./assets/brand/mas-wordmark-cream.svg";
+import masPlateLogo from "./assets/brand/mas-wordmark-cocoa.svg";
+import masMark from "./assets/brand/mas-stone-cream.svg";
 import aromaLogo from "./assets/brand/aroma-logo.png";
 import aromaMark from "./assets/brand/aroma-icon.png";
 import covyLogo from "./assets/brand/covy-wordmark.png";
@@ -16,7 +23,7 @@ import covyMark from "./assets/brand/covy-mark.png";
 
 export type BrandKey = "mas" | "aroma" | "covy";
 
-/** Colours for the unlit cup, the state the page rests in. */
+/** Colours for the unlit cup, the state a dark page rests in. */
 export interface CupDimPalette {
   bgTop: string;
   bgMid: string;
@@ -34,7 +41,7 @@ export interface CupDimPalette {
   steam: string;
 }
 
-/** Colours for the lit cup, revealed inside the cursor spotlight. */
+/** Colours for the lit cup. Also used for Aroma's daylight scene. */
 export interface CupLitPalette {
   bgTop: string;
   bgMid: string;
@@ -57,50 +64,51 @@ export interface CupLitPalette {
   steam: string;
 }
 
+/** Surface and text colours. Every shared component reads these. */
+export interface UiTokens {
+  scheme: "dark" | "light";
+  bg: string;
+  bgAlt: string;
+  bgSoft: string;
+  text: string;
+  textMuted: string;
+  textFaint: string;
+  line: string;
+  /** Colour for text and icons sitting on top of the hero scene. */
+  onHero: string;
+  onHeroMuted: string;
+}
+
 export interface Brand {
   key: BrandKey;
-  /** Route this brand lives at. */
   path: string;
   name: string;
   nameAr: string;
-  /** Short line under the wordmark in the footer. */
   descriptor: string;
 
-  /**
-   * The supplied lockup, used as designed and never recoloured. MAS has no
-   * supplied logo of its own yet, so it falls back to the cup mark.
-   */
   logo?: string;
-  /** Icon only, for tight spaces. */
   mark?: string;
-  /**
-   * The light plate the lockup is designed to sit on. The dark pages show the
-   * logo reversed to white; wherever the real colours matter, it goes on this.
-   */
+  plateLogo?: string;
   plateBg?: string;
 
-  /** Button and accent colour. */
+  ui: UiTokens;
+
   accent: string;
   accentHover: string;
-  /** Text colour that sits on the accent. */
   accentText: string;
 
   cupDim: CupDimPalette;
   cupLit: CupLitPalette;
+  /** Aroma only. The bright version of the scene used on its light hero. */
+  cupDay?: CupLitPalette;
 
-  /** Nav links. `target` is the id of a section on the same page. */
   nav: { label: string; target: string }[];
-  /** Label on the primary nav button, which jumps to the contact form. */
   navCta: string;
 
   hero: {
-    /** Rendered in Playfair Display italic. */
     line1: string;
-    /** Rendered in Inter. */
     line2: string;
-    /** Bottom left, hidden on small screens. */
     aside: string;
-    /** Bottom right, above the button. */
     prompt: string;
     cta: string;
   };
@@ -119,7 +127,23 @@ export interface Brand {
     heading: string;
     blurb: string;
   };
+
+  /** Instagram handle without the @. Empty until the real one is supplied. */
+  instagram: string;
 }
+
+const DARK_UI = (bg: string, bgAlt: string, bgSoft: string): UiTokens => ({
+  scheme: "dark",
+  bg,
+  bgAlt,
+  bgSoft,
+  text: "#ffffff",
+  textMuted: "rgba(255,255,255,0.68)",
+  textFaint: "rgba(255,255,255,0.42)",
+  line: "rgba(255,255,255,0.12)",
+  onHero: "#ffffff",
+  onHeroMuted: "rgba(255,255,255,0.8)",
+});
 
 const MAS: Brand = {
   key: "mas",
@@ -127,6 +151,13 @@ const MAS: Brand = {
   name: "MAS Egypt",
   nameAr: "ماس مصر",
   descriptor: "Food and beverage group",
+
+  logo: masLogo,
+  mark: masMark,
+  plateLogo: masPlateLogo,
+  plateBg: "#D9C3A5",
+
+  ui: DARK_UI("#0b0807", "#141010", "#1c1512"),
 
   accent: "#A1663A",
   accentHover: "#8a5530",
@@ -174,6 +205,7 @@ const MAS: Brand = {
     { label: "Group", target: "top" },
     { label: "About", target: "about" },
     { label: "Brands", target: "brands" },
+    { label: "Management", target: "management" },
     { label: "Contact", target: "contact" },
   ],
   navCta: "Work with us",
@@ -182,7 +214,7 @@ const MAS: Brand = {
     line1: "We build places",
     line2: "people come back to.",
     aside:
-      "MAS Egypt owns and operates restaurants, lounges and cafés. Two brands under one roof, run to the same standard by the same people.",
+      "MAS Egypt owns and operates restaurants, lounges and cafés, and runs venues for owners who would rather hand the floor to someone who does this properly.",
     prompt:
       "Move your cursor across the room. Every space we run starts dark and empty, then somebody makes it warm.",
     cta: "See our brands",
@@ -191,16 +223,16 @@ const MAS: Brand = {
   about: {
     eyebrow: "About",
     headingItalic: "One group,",
-    heading: "two front doors.",
+    heading: "two ways in.",
     body: [
-      "MAS Egypt is a food and beverage group. We own the places we run, which means we are there for the slow Tuesday afternoon as well as the full Thursday night.",
+      "MAS Egypt is a food and beverage group. We own and run our own brands, and we operate venues for people who own the room but not the expertise to run it.",
       "The group works across restaurants, lounges and cafés. Different rooms, different crowds, the same standards behind the pass. Sourcing we can defend, service that does not need a script, and a kitchen that runs the same whether or not anyone is watching.",
-      "Two brands sit under the group today. Each has its own room and its own regulars. Both answer to the same house.",
+      "Two brands sit under the group today. Alongside them we manage venues that carry someone else's name, on the same operating standard as our own.",
     ],
     facts: [
-      { label: "Two brands", value: "Aroma Lounge and COVY" },
-      { label: "Full service", value: "Restaurants, lounges and cafés" },
-      { label: "Owned and run", value: "We operate what we own" },
+      { label: "Owned brands", value: "Aroma Lounge and COVY" },
+      { label: "Managed venues", value: "Run for third party owners" },
+      { label: "Formats", value: "Restaurants, lounges and cafés" },
     ],
   },
 
@@ -209,8 +241,10 @@ const MAS: Brand = {
     headingItalic: "Tell us",
     heading: "what you need.",
     blurb:
-      "Bookings, partnerships, supply, press or a question about one of the brands. It reaches the group office either way.",
+      "Bookings, management enquiries, partnerships, supply or press. It reaches the group office either way.",
   },
+
+  instagram: "",
 };
 
 const AROMA: Brand = {
@@ -218,11 +252,26 @@ const AROMA: Brand = {
   path: "/aroma",
   name: "Aroma Lounge",
   nameAr: "أروما لاونج",
-  descriptor: "Specialty coffee and bakery",
+  descriptor: "Coffee, kitchen and desks",
 
   logo: aromaLogo,
   mark: aromaMark,
   plateBg: "#F5EFE6",
+
+  // The daytime brand, so the whole page runs light while the group and COVY
+  // stay dark. Same type and motion, inverted surface.
+  ui: {
+    scheme: "light",
+    bg: "#FAF6EF",
+    bgAlt: "#F2EBDF",
+    bgSoft: "#FFFFFF",
+    text: "#23301A",
+    textMuted: "rgba(35,48,26,0.70)",
+    textFaint: "rgba(35,48,26,0.45)",
+    line: "rgba(35,48,26,0.14)",
+    onHero: "#23301A",
+    onHeroMuted: "rgba(35,48,26,0.72)",
+  },
 
   // Sampled from the supplied lockup: icon #90C63D, wordmark #82A541.
   accent: "#82A541",
@@ -266,46 +315,67 @@ const AROMA: Brand = {
     stripe: "#90C63D",
     steam: "#fff4e2",
   },
+  /** Morning light on a cream table. This is Aroma's hero. */
+  cupDay: {
+    bgTop: "#FDFAF4",
+    bgMid: "#F4ECDD",
+    bgBot: "#E7DAC4",
+    tableTop: "#E8D9BE",
+    tableBot: "#CFB894",
+    glowCore: "#FFF8E8",
+    glowMid: "#F3E1B8",
+    cupA: "#FFFFFF",
+    cupB: "#FBF8F2",
+    cupC: "#E2D9C7",
+    rimFill: "#F8F4EC",
+    coffeeTop: "#7A4B28",
+    coffeeBot: "#3E2418",
+    crema: "#C79A63",
+    cremaDeep: "#8E5E34",
+    saucerOuter: "#EBE1CE",
+    saucerInner: "#FFFFFF",
+    stripe: "#82A541",
+    steam: "#BFAE8A",
+  },
 
   nav: [
     { label: "The room", target: "top" },
-    { label: "About", target: "about" },
-    { label: "Visit", target: "contact" },
+    { label: "Menu", target: "menu" },
+    { label: "Desks", target: "desks" },
+    { label: "Branches", target: "branches" },
+    { label: "Reserve", target: "reserve" },
   ],
   navCta: "Reserve a table",
 
   hero: {
-    line1: "Slow mornings,",
-    line2: "start with coffee.",
+    line1: "Aroma",
+    line2: "Lounge",
     aside:
-      "Every cup is pulled to order, from single origin beans roasted in small batches and brewed the same careful way, morning after morning.",
-    prompt:
-      "Move your cursor across the cup to see how we get every pour right, from bean to your table.",
+      "Lavazza on the bar, a grill and a feteer counter in the kitchen, shisha on the terrace, and tables built for people who came to work.",
+    prompt: "",
     cta: "See the menu",
   },
 
   about: {
     eyebrow: "About Aroma Lounge",
-    headingItalic: "Coffee first,",
-    heading: "everything else after.",
+    headingItalic: "Open early,",
+    heading: "useful all day.",
     body: [
-      "Aroma Lounge is the daytime room in the group. Specialty coffee, a bakery counter that starts before the doors open, and enough space to sit for three hours without anyone looking at your table.",
-      "Beans are roasted in small batches so nothing sits long enough to go flat. The bar runs on the same recipe every shift, which is less romantic than it sounds and the only reason a flat white tastes the same in March and in August.",
+      "Aroma Lounge is the daytime room in the group. Lavazza coffee on the bar, a kitchen that runs feteer and grill side by side, and a terrace where the shisha lives.",
+      "It is also where a good part of New Cairo works. There are desks with power and proper wifi, and nobody moves you on for staying past your second cup. Students before exams, freelancers on deadline, remote teams who needed a room for the morning.",
     ],
-    facts: [
-      { label: "Roast", value: "Small batch, single origin" },
-      { label: "Kitchen", value: "Bakery from early morning" },
-      { label: "Room", value: "Built to sit in, not pass through" },
-    ],
+    facts: [],
   },
 
   contact: {
-    eyebrow: "Visit",
-    headingItalic: "Book a table",
-    heading: "or just ask.",
+    eyebrow: "Say hello",
+    headingItalic: "Questions,",
+    heading: "groups, or bulk beans.",
     blurb:
-      "Reservations, large groups, beans by the bag, or a question about what is on the bar this week.",
+      "For a table use the reservation form above. For anything else, large groups, events, or beans by the bag, this reaches the team.",
   },
+
+  instagram: "",
 };
 
 const COVY: Brand = {
@@ -318,6 +388,8 @@ const COVY: Brand = {
   logo: covyLogo,
   mark: covyMark,
   plateBg: "#DCD4CF",
+
+  ui: DARK_UI("#0d111a", "#141926", "#1a2030"),
 
   // Sampled from the supplied assets: navy #262D3F, greige #DCD4CF, mocha #765F4D.
   accent: "#DCD4CF",
@@ -401,6 +473,8 @@ const COVY: Brand = {
     blurb:
       "Reservations, private hire, large groups and events. Tell us the night and how many.",
   },
+
+  instagram: "",
 };
 
 export const BRANDS: Record<BrandKey, Brand> = {
@@ -409,5 +483,39 @@ export const BRANDS: Record<BrandKey, Brand> = {
   covy: COVY,
 };
 
-/** The two brands that sit under the group, in the order they appear. */
+/** The two brands MAS owns, in the order they appear. */
 export const CHILD_BRANDS: Brand[] = [AROMA, COVY];
+
+/**
+ * What MAS does for owners who hold the lease but not the operation. Kept as
+ * capabilities rather than a client roster until real managed venues are
+ * cleared to be named.
+ */
+export const MANAGEMENT = {
+  eyebrow: "Management",
+  headingItalic: "We also run rooms",
+  heading: "that are not ours.",
+  blurb:
+    "Owning a venue and running one are different jobs. When the second is not yours, the group takes the floor, the kitchen and the numbers, and the name over the door stays yours.",
+  services: [
+    {
+      title: "Concept and positioning",
+      body: "What the room is for, who it is for, and what it should cost to sit in it. Built before the first wall goes up where possible, retrofitted where not.",
+    },
+    {
+      title: "Kitchen and menu",
+      body: "Menu engineering against real food cost, supplier lines, prep systems and the standards that keep a dish identical on a quiet Monday and a full Friday.",
+    },
+    {
+      title: "Floor and service",
+      body: "Hiring, training and the service model. Staff who know the menu and the room, on a rota that holds together when somebody calls in sick.",
+    },
+    {
+      title: "Numbers and reporting",
+      body: "Covers, spend per head, waste, payroll against revenue. Monthly reporting the owner can actually read, not a spreadsheet nobody opens.",
+    },
+  ],
+  /** Set to true and fill the roster once clients are cleared to be named. */
+  showRoster: false,
+  rosterNote: "Managed venue list available on request.",
+};

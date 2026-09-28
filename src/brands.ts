@@ -4,22 +4,24 @@
  * MAS Egypt is the parent. Aroma Lounge and COVY sit under it.
  * All three share the same layout, type and motion. Only these tokens change.
  *
- * MAS and COVY are dark. Aroma is the daytime brand, so it runs light. Same
- * system, inverted palette, which is why every component reads its colours
- * from `ui` rather than hardcoding white.
+ * All three now run on a clean white ground with a shared sage green accent,
+ * refreshed from their previous brand-specific palettes. Same system, one
+ * surface, which is why every component reads its colours from `ui` rather
+ * than hardcoding white.
  *
  * Colours come from the MAS palette:
  *   3E2723 espresso   A1663A caramel   D9C3A5 sand
  *   F5EFE6 cream      4F6F52 sage
  */
 
-import masLogo from "./assets/brand/mas-wordmark-cream.svg";
-import masPlateLogo from "./assets/brand/mas-wordmark-cocoa.svg";
-import masMark from "./assets/brand/mas-stone-cream.svg";
 import aromaLogo from "./assets/brand/aroma-logo.png";
 import aromaMark from "./assets/brand/aroma-icon.png";
 import covyLogo from "./assets/brand/covy-wordmark.png";
 import covyMark from "./assets/brand/covy-mark.png";
+import masWordmark from "./assets/brand/mas-wordmark-cocoa.svg";
+import masWordmarkCream from "./assets/brand/mas-wordmark-cream.svg";
+import masStone from "./assets/brand/mas-stone-copper.svg";
+import masSeal from "./assets/brand/mas-seal-copper.svg";
 
 export type BrandKey = "mas" | "aroma" | "covy";
 
@@ -67,6 +69,17 @@ export interface CupLitPalette {
 /** Surface and text colours. Every shared component reads these. */
 export interface UiTokens {
   scheme: "dark" | "light";
+  /**
+   * Which display face headings run on.
+   *   "display"  Playfair italic, the two consumer brands.
+   *   "modern"   Archivo set heavy and tight. Archivo is one of the five
+   *              faces in the MAS pack, so the group page stays inside its own
+   *              type system while reading as a current product site rather
+   *              than an editorial one. Cormorant stays in the system for
+   *              print and signage, where an old-style face belongs.
+   *   "sans"     no display face at all.
+   */
+  headingFont: "display" | "modern" | "sans";
   bg: string;
   bgAlt: string;
   bgSoft: string;
@@ -87,8 +100,11 @@ export interface Brand {
   descriptor: string;
 
   logo?: string;
+  /** Reversed artwork for the same mark, for dark grounds. */
+  logoReversed?: string;
   mark?: string;
-  plateLogo?: string;
+  /** MAS only. The solid diamond, used as punctuation in layout. */
+  seal?: string;
   plateBg?: string;
 
   ui: UiTokens;
@@ -96,6 +112,13 @@ export interface Brand {
   accent: string;
   accentHover: string;
   accentText: string;
+  /** Primary button ground, where the accent is too light to carry text. */
+  button?: string;
+  buttonText?: string;
+  /** MAS only. Lifted values for the sections that invert onto a dark ground. */
+  accentOnDark?: string;
+  sageOnDark?: string;
+  dark?: string;
 
   cupDim: CupDimPalette;
   cupLit: CupLitPalette;
@@ -132,19 +155,6 @@ export interface Brand {
   instagram: string;
 }
 
-const DARK_UI = (bg: string, bgAlt: string, bgSoft: string): UiTokens => ({
-  scheme: "dark",
-  bg,
-  bgAlt,
-  bgSoft,
-  text: "#ffffff",
-  textMuted: "rgba(255,255,255,0.68)",
-  textFaint: "rgba(255,255,255,0.42)",
-  line: "rgba(255,255,255,0.12)",
-  onHero: "#ffffff",
-  onHeroMuted: "rgba(255,255,255,0.8)",
-});
-
 const MAS: Brand = {
   key: "mas",
   path: "/",
@@ -152,16 +162,41 @@ const MAS: Brand = {
   nameAr: "ماس مصر",
   descriptor: "Food and beverage group",
 
-  logo: masLogo,
-  mark: masMark,
-  plateLogo: masPlateLogo,
-  plateBg: "#D9C3A5",
+  logo: masWordmark,
+  logoReversed: masWordmarkCream,
+  mark: masStone,
+  seal: masSeal,
+  plateBg: "#F5EFE6",
 
-  ui: DARK_UI("#0b0807", "#141010", "#1c1512"),
+  // The manual's own light scheme. Cream replaces white everywhere, Cocoa
+  // carries the type at 12.09:1, and a Kraft tint over Cream gives the second
+  // ground that a screen needs without opening a sixth colour.
+  ui: {
+    scheme: "light",
+    headingFont: "modern",
+    bg: "#FFFFFF",
+    bgAlt: "#F6F7F5",
+    bgSoft: "#FFFFFF",
+    text: "#3E2723",
+    textMuted: "rgba(62,39,35,0.72)",
+    textFaint: "rgba(62,39,35,0.52)",
+    line: "rgba(62,39,35,0.12)",
+    onHero: "#3E2723",
+    onHeroMuted: "rgba(62,39,35,0.72)",
+  },
 
-  accent: "#A1663A",
-  accentHover: "#8a5530",
-  accentText: "#F5EFE6",
+  // Refreshed onto a clean white ground with a sage green accent in place of
+  // the old copper. It carries the marks, the rules and the active states;
+  // the primary button takes white on sage, the site's new strongest pairing.
+  accent: "#4F6F52",
+  accentHover: "#3f5a42",
+  accentText: "#FFFFFF",
+  button: "#4F6F52",
+  buttonText: "#FFFFFF",
+  /** Digital-only lifted tints, which the manual supplies for dark interfaces. */
+  accentOnDark: "#7E9C7F",
+  sageOnDark: "#7E9C7F",
+  dark: "#1C1311",
 
   cupDim: {
     bgTop: "#1c1512",
@@ -202,46 +237,45 @@ const MAS: Brand = {
   },
 
   nav: [
-    { label: "Group", target: "top" },
     { label: "About", target: "about" },
     { label: "Brands", target: "brands" },
-    { label: "Management", target: "management" },
+    { label: "What we do", target: "services" },
+    { label: "Our work", target: "work" },
     { label: "Contact", target: "contact" },
   ],
-  navCta: "Work with us",
+  navCta: "Contact the group",
 
   hero: {
-    line1: "We build places",
-    line2: "people come back to.",
+    line1: "We build the room,",
+    line2: "then we run it.",
     aside:
-      "MAS Egypt owns and operates restaurants, lounges and cafés, and runs venues for owners who would rather hand the floor to someone who does this properly.",
-    prompt:
-      "Move your cursor across the room. Every space we run starts dark and empty, then somebody makes it warm.",
-    cta: "See our brands",
+      "MAS Egypt develops and operates food and beverage brands in Cairo, and runs venues for owners who hold the site and the capital but not the operating team.",
+    prompt: "",
+    cta: "What we do",
   },
 
   about: {
-    eyebrow: "About",
-    headingItalic: "One group,",
-    heading: "two ways in.",
+    eyebrow: "The group",
+    headingItalic: "MAS is the operator,",
+    heading: "not the sign above the door.",
     body: [
-      "MAS Egypt is a food and beverage group. We own and run our own brands, and we operate venues for people who own the room but not the expertise to run it.",
-      "The group works across restaurants, lounges and cafés. Different rooms, different crowds, the same standards behind the pass. Sourcing we can defend, service that does not need a script, and a kitchen that runs the same whether or not anyone is watching.",
-      "Two brands sit under the group today. Alongside them we manage venues that carry someone else's name, on the same operating standard as our own.",
+      "We build and run food and beverage brands in Cairo. Each one carries its own name, colour and voice; the group backs it, guarantees it, and stays one step back. What we sell is not a logo on a fascia but the thing a single restaurant cannot buy for itself.",
+      "That runs upstream as well as down. Green coffee and raw produce are bought direct, roasted and prepared in our own production, and sent out to houses we staff and train ourselves. The margin and the quality ceiling both live above the kitchen, so that is where we start.",
+      "Alongside the brands we own, the group operates venues for owners who hold the room and the capital but not the operating team. Same standard, same reporting, and the name over the door stays theirs.",
     ],
     facts: [
-      { label: "Owned brands", value: "Aroma Lounge and COVY" },
-      { label: "Managed venues", value: "Run for third party owners" },
-      { label: "Formats", value: "Restaurants, lounges and cafés" },
+      { label: "Own the source", value: "Green coffee and raw produce bought direct, not finished product" },
+      { label: "Fire and time", value: "Roast curves, proof times, reduction. The parts that cannot be hurried" },
+      { label: "The same at 7am and 11pm", value: "Consistency is what a group sells that a single restaurant cannot" },
     ],
   },
 
   contact: {
     eyebrow: "Contact",
-    headingItalic: "Tell us",
-    heading: "what you need.",
+    headingItalic: "Talk to",
+    heading: "the group office.",
     blurb:
-      "Bookings, management enquiries, partnerships, supply or press. It reaches the group office either way.",
+      "MAS appears directly on contracts, supply, job postings and investor material. Venue management, partnership, wholesale or press \u2014 tell us which and it reaches the right desk.",
   },
 
   instagram: "",
@@ -262,13 +296,14 @@ const AROMA: Brand = {
   // stay dark. Same type and motion, inverted surface.
   ui: {
     scheme: "light",
-    bg: "#FAF6EF",
-    bgAlt: "#F2EBDF",
+    headingFont: "display",
+    bg: "#FFFFFF",
+    bgAlt: "#F6F7F5",
     bgSoft: "#FFFFFF",
     text: "#23301A",
     textMuted: "rgba(35,48,26,0.70)",
     textFaint: "rgba(35,48,26,0.45)",
-    line: "rgba(35,48,26,0.14)",
+    line: "rgba(35,48,26,0.12)",
     onHero: "#23301A",
     onHeroMuted: "rgba(35,48,26,0.72)",
   },
@@ -351,7 +386,7 @@ const AROMA: Brand = {
     line1: "Aroma",
     line2: "Lounge",
     aside:
-      "Lavazza on the bar, a grill and a feteer counter in the kitchen, shisha on the terrace, and tables built for people who came to work.",
+      "A full bar of coffee, juice and cold drinks, a grill and a feteer counter in the kitchen, shisha on the terrace, and tables built for people who came to work.",
     prompt: "",
     cta: "See the menu",
   },
@@ -361,7 +396,7 @@ const AROMA: Brand = {
     headingItalic: "Open early,",
     heading: "useful all day.",
     body: [
-      "Aroma Lounge is the daytime room in the group. Lavazza coffee on the bar, a kitchen that runs feteer and grill side by side, and a terrace where the shisha lives.",
+      "Aroma Lounge is the daytime room in the group. A bar that runs premium coffee, fresh juice and cold drinks all day, a kitchen that runs feteer and grill side by side, and a terrace where the shisha lives.",
       "It is also where a good part of New Cairo works. There are desks with power and proper wifi, and nobody moves you on for staying past your second cup. Students before exams, freelancers on deadline, remote teams who needed a room for the morning.",
     ],
     facts: [],
@@ -389,12 +424,31 @@ const COVY: Brand = {
   mark: covyMark,
   plateBg: "#DCD4CF",
 
-  ui: DARK_UI("#0d111a", "#141926", "#1a2030"),
+  // Rebased onto white, in line with the rest of the site, but COVY keeps its
+  // own identity rather than the shared sage green: navy carries the type,
+  // and mocha (from the supplied assets, already used in the cup art below)
+  // carries the accent. bgAlt runs a warm greige rather than the generic
+  // off-white the other two brands use, so COVY still reads as its own room.
+  ui: {
+    scheme: "light",
+    headingFont: "display",
+    bg: "#FFFFFF",
+    bgAlt: "#F1ECE6",
+    bgSoft: "#FFFFFF",
+    text: "#262D3F",
+    textMuted: "rgba(38,45,63,0.70)",
+    textFaint: "rgba(38,45,63,0.45)",
+    line: "rgba(38,45,63,0.12)",
+    onHero: "#262D3F",
+    onHeroMuted: "rgba(38,45,63,0.72)",
+  },
 
-  // Sampled from the supplied assets: navy #262D3F, greige #DCD4CF, mocha #765F4D.
-  accent: "#DCD4CF",
-  accentHover: "#c6bdb6",
-  accentText: "#262D3F",
+  // Sampled from the supplied assets: navy #262D3F, greige #DCD4CF, mocha
+  // #765F4D. Mocha carries the accent, greige is the secondary surface tone
+  // used in the work section's cards.
+  accent: "#765F4D",
+  accentHover: "#5f4c3e",
+  accentText: "#F7F3EE",
 
   cupDim: {
     bgTop: "#1a2030",
@@ -436,6 +490,8 @@ const COVY: Brand = {
 
   nav: [
     { label: "The room", target: "top" },
+    { label: "Work here", target: "work" },
+    { label: "Menu", target: "menu" },
     { label: "About", target: "about" },
     { label: "Reserve", target: "contact" },
   ],
@@ -518,4 +574,266 @@ export const MANAGEMENT = {
   /** Set to true and fill the roster once clients are cleared to be named. */
   showRoster: false,
   rosterNote: "Managed venue list available on request.",
+};
+
+/**
+ * Heading tracking.
+ *
+ * The two consumer brands set their display face tight. Cormorant wants the
+ * opposite: the manual asks for +2% at display sizes, and an old-style face
+ * set negative closes its thins up.
+ */
+export function headingTracking(ui: UiTokens): string {
+  return ui.headingFont === "modern" ? "tracking-[-0.045em]" : "tracking-[-0.05em]";
+}
+
+/**
+ * The face for the second, non-italic line of a two-part heading.
+ *
+ * The consumer brands deliberately drop out of Playfair there, which is what
+ * gives their headings their two-voice look. MAS has no italic voice: its
+ * heading is one sentence in one face, so both lines stay on Cormorant.
+ */
+export function headingFace(ui: UiTokens): string {
+  return ui.headingFont === "modern" ? "font-semibold" : "";
+}
+
+/** The display face class for a brand's headings. */
+export function displayClass(ui: UiTokens): string {
+  if (ui.headingFont === "display") return "font-playfair italic";
+  if (ui.headingFont === "modern") return "font-semibold";
+  return "";
+}
+
+/**
+ * Colour for small uppercase labels.
+ *
+ * The two consumer brands use their accent. MAS cannot: copper on cream is
+ * 4.10:1, which its own manual clears only at 24px and up, so its labels run
+ * cocoa and the copper seal beside them carries the colour instead.
+ */
+export function labelColor(brand: Brand): string {
+  return brand.key === "mas" ? brand.ui.textMuted : brand.accent;
+}
+
+/** Ground and text for a primary button. */
+export function buttonColors(brand: Brand): { background: string; color: string } {
+  return { background: brand.button ?? brand.accent, color: brand.buttonText ?? brand.accentText };
+}
+
+/* ---------------------------------------------------------------------------
+   Group content
+   ---------------------------------------------------------------------------
+   MAS is a hybrid: it owns two brands and it operates venues for third party
+   owners. On a group site that second half is the part that carries weight,
+   because a two brand portfolio will lose a size comparison against anyone.
+   So the service business gets the centre of the page and the portfolio sits
+   beside it rather than above it.
+--------------------------------------------------------------------------- */
+
+/**
+ * The figures band.
+ *
+ * PLACEHOLDER VALUES. Every `value` below has to be confirmed with MAS before
+ * this goes live. The labels are the part that matters: they count the things
+ * an operator can be proud of at this size rather than a brand count, which is
+ * the number that would work against the group.
+ */
+export const GROUP_STATS: { value: string; label: string; note: string }[] = [
+  { value: "2018", label: "Operating since", note: "First room opened in New Cairo" },
+  { value: "04", label: "Venues run", note: "Owned brands and managed rooms" },
+  { value: "140", label: "On the team", note: "Kitchen, floor and group office" },
+  { value: "18h", label: "Open a day", note: "Morning service through to close" },
+];
+
+export interface Service {
+  key: string;
+  title: string;
+  /** The one line that says who this is for. */
+  audience: string;
+  body: string;
+  includes: string[];
+  /** What the owner is actually left holding. */
+  outcome: string;
+}
+
+/**
+ * What the group sells. This is the one interactive block on the page: four
+ * engagements, one panel, because a landlord and a brand owner arrive wanting
+ * different things and neither should have to read the other's section.
+ */
+export const SERVICES: Service[] = [
+  {
+    key: "operate",
+    title: "We operate",
+    audience: "For owners who have the room but not the team",
+    body:
+      "The group takes the floor, the kitchen and the numbers, and the name over the door stays yours. We hire and train the team, set the menu against real food cost, and run the service to the same standard we hold our own brands to.",
+    includes: [
+      "Floor and kitchen hiring, training and rota",
+      "Menu engineering against real food cost",
+      "Supplier lines and prep systems",
+      "Monthly covers, spend per head, waste and payroll reporting",
+    ],
+    outcome: "A room that runs without you in it.",
+  },
+  {
+    key: "build",
+    title: "We build",
+    audience: "For a site that has not opened yet",
+    body:
+      "What the room is for, who it is for, and what it should cost to sit in it, decided before the first wall goes up. Concept, positioning, menu architecture and the operating model, handed over as something that can actually be run rather than a deck.",
+    includes: [
+      "Concept and positioning",
+      "Menu architecture and pricing",
+      "Kitchen layout and equipment brief",
+      "Opening team structure and launch plan",
+    ],
+    outcome: "An opening that was designed to be operated.",
+  },
+  {
+    key: "fix",
+    title: "We fix",
+    audience: "For a room that is trading below what it should",
+    body:
+      "A short engagement on a venue that is open and underperforming. We read the numbers first, then the kitchen and the floor, and come back with the three or four changes that move the line rather than a list of forty that nobody will do.",
+    includes: [
+      "Food and labour cost audit",
+      "Menu rework and supplier renegotiation",
+      "Service model and rota rebuild",
+      "Ninety day plan with the owner in the room",
+    ],
+    outcome: "A shorter list, in the order it should be done.",
+  },
+  {
+    key: "supply",
+    title: "We supply",
+    audience: "For kitchens outside the group",
+    body:
+      "Coffee, bakery and the prepared items the group already makes for its own rooms, sold on to kitchens that would rather buy them than build a production line. Specified, consistent, and delivered on a standing order.",
+    includes: [
+      "Coffee programme and roast to spec",
+      "Bakery and prepared items",
+      "Standing order and delivery",
+      "Quality control on every line",
+    ],
+    outcome: "One less thing your kitchen has to make.",
+  },
+];
+
+export interface CaseStudy {
+  key: string;
+  /** Left unbranded until the client clears the name. */
+  client: string;
+  service: string;
+  challenge: string;
+  did: string;
+  results: { value: string; label: string }[];
+}
+
+/**
+ * Selected work.
+ *
+ * PLACEHOLDER. These are the shape of the case studies, not real engagements.
+ * Replace the copy and the figures with MAS's own before launch, and get the
+ * client's written sign off before naming any of them.
+ */
+export const CASE_STUDIES: CaseStudy[] = [
+  {
+    key: "one",
+    client: "Casual dining, New Cairo",
+    service: "We operate",
+    challenge:
+      "An owner with a finished room, a full fit out and no operating team. Two soft openings had already been pulled.",
+    did:
+      "Took the floor and the kitchen end to end. Rebuilt the menu against real food cost, hired and trained the team, and opened on the third attempt with a service model the owner had not had to write.",
+    results: [
+      { value: "—", label: "Covers a week" },
+      { value: "—", label: "Food cost" },
+      { value: "—", label: "Months to break even" },
+    ],
+  },
+  {
+    key: "two",
+    client: "Café and bakery, Madinaty",
+    service: "We fix",
+    challenge:
+      "Open for a year, busy on the floor, losing money on the plate. Food cost was running well above where the pricing had been set.",
+    did:
+      "Audited food and labour first, then cut the menu by a third, renegotiated two supplier lines and rebuilt the rota around the actual trading curve rather than the one on the roster.",
+    results: [
+      { value: "—", label: "Food cost moved" },
+      { value: "—", label: "Menu lines cut" },
+      { value: "—", label: "Weeks to effect" },
+    ],
+  },
+  {
+    key: "three",
+    client: "Lounge, Fifth Settlement",
+    service: "We build",
+    challenge:
+      "A site secured before anyone had decided what it was for, with a kitchen brief that did not match the menu anybody wanted to serve.",
+    did:
+      "Set the concept, the positioning and the price point, reworked the kitchen layout around the real menu, and handed over an opening team structure and a launch plan.",
+    results: [
+      { value: "—", label: "Weeks to open" },
+      { value: "—", label: "Opening team" },
+      { value: "—", label: "Spend per head" },
+    ],
+  },
+];
+
+export interface NowItem {
+  date: string;
+  kind: "Opening" | "In build" | "Group" | "Hiring";
+  title: string;
+  body: string;
+}
+
+/**
+ * What is happening right now.
+ *
+ * The two branch entries are real. The rest are PLACEHOLDER and are here to
+ * show the shape of the strip. MAS should be able to add to this without a
+ * developer, so it stays a plain array rather than anything clever.
+ */
+export const NOW: NowItem[] = [
+  {
+    date: "Now open",
+    kind: "Opening",
+    title: "Aroma Lounge, Madinaty",
+    body: "The second Aroma room, running the full kitchen, the terrace and the desk floor from morning through to close.",
+  },
+  {
+    date: "Now open",
+    kind: "Opening",
+    title: "Aroma Lounge, Mivida",
+    body: "The original room. Coffee bar, feteer counter, grill and work desks, open late seven days.",
+  },
+  {
+    date: "This quarter",
+    kind: "In build",
+    title: "COVY, second site",
+    body: "A second evening room in build, opening to the same late kitchen and bar programme.",
+  },
+  {
+    date: "Open now",
+    kind: "Hiring",
+    title: "Kitchen and floor, both branches",
+    body: "Line cooks, baristas and floor team across Mivida and Madinaty. Trained in house, no agency.",
+  },
+];
+
+/** The three lines each owned brand gets on the group page. */
+export const BRAND_DETAIL: Record<string, string[]> = {
+  aroma: [
+    "Specialty coffee, a full drinks bar and a kitchen running feteer, grill and breakfast",
+    "Two branches in New Cairo, open morning through to late",
+    "Work desks for students, freelancers and remote teams",
+  ],
+  covy: [
+    "Evening lounge with a late kitchen and a full bar",
+    "Built for the second half of the night",
+    "Private hire and events",
+  ],
 };

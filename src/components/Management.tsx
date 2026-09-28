@@ -1,6 +1,7 @@
 import { Compass, ChefHat, Users, LineChart } from "lucide-react";
 import Reveal from "./Reveal";
-import { MANAGEMENT, type Brand } from "../brands";
+import Eyebrow from "./Eyebrow";
+import { MANAGEMENT, buttonColors, displayClass, headingFace, headingTracking, type Brand } from "../brands";
 
 const ICONS = [Compass, ChefHat, Users, LineChart];
 
@@ -14,6 +15,9 @@ interface ManagementProps {
  */
 export default function Management({ brand }: ManagementProps) {
   const ui = brand.ui;
+  const display = displayClass(ui);
+  const tight = headingTracking(ui);
+  const face = headingFace(ui);
 
   return (
     <section
@@ -25,17 +29,15 @@ export default function Management({ brand }: ManagementProps) {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-20">
           <div>
             <Reveal>
-              <p className="text-[11px] uppercase tracking-[0.22em] mb-6" style={{ color: brand.accent }}>
-                {MANAGEMENT.eyebrow}
-              </p>
+              <Eyebrow brand={brand} className="mb-6">{MANAGEMENT.eyebrow}</Eyebrow>
             </Reveal>
 
             <Reveal delay={0.06}>
-              <h2 className="leading-[1.0] tracking-[-0.03em]" style={{ color: ui.text }}>
-                <span className="block font-playfair italic text-4xl sm:text-5xl md:text-6xl">
+              <h2 className="leading-[1.05]" style={{ color: ui.text }}>
+                <span className={`block text-4xl sm:text-5xl md:text-6xl ${display}`}>
                   {MANAGEMENT.headingItalic}
                 </span>
-                <span className="block text-4xl sm:text-5xl md:text-6xl tracking-[-0.05em]">
+                <span className={`block text-4xl sm:text-5xl md:text-6xl ${tight} ${face}`}>
                   {MANAGEMENT.heading}
                 </span>
               </h2>
@@ -64,7 +66,7 @@ export default function Management({ brand }: ManagementProps) {
                   document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="mt-9 text-sm font-medium px-7 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
-                style={{ background: brand.accent, color: brand.accentText }}
+                style={buttonColors(brand)}
               >
                 Talk to us about your venue
               </button>

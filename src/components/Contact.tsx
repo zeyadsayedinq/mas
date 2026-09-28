@@ -1,6 +1,7 @@
 import Reveal from "./Reveal";
+import Eyebrow from "./Eyebrow";
 import ContactForm from "./ContactForm";
-import type { Brand } from "../brands";
+import { displayClass, headingFace, headingTracking, type Brand } from "../brands";
 
 interface ContactProps {
   brand: Brand;
@@ -9,6 +10,9 @@ interface ContactProps {
 
 export default function Contact({ brand, defaultSubject }: ContactProps) {
   const { contact, ui } = brand;
+  const display = displayClass(ui);
+  const tight = headingTracking(ui);
+  const face = headingFace(ui);
 
   return (
     <section
@@ -19,17 +23,15 @@ export default function Contact({ brand, defaultSubject }: ContactProps) {
       <div className="mx-auto max-w-6xl grid gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-20">
         <div>
           <Reveal>
-            <p className="text-[11px] uppercase tracking-[0.22em] mb-6" style={{ color: brand.accent }}>
-              {contact.eyebrow}
-            </p>
+            <Eyebrow brand={brand} className="mb-6">{contact.eyebrow}</Eyebrow>
           </Reveal>
 
           <Reveal delay={0.06}>
-            <h2 className="leading-[1.0] tracking-[-0.03em]" style={{ color: ui.text }}>
-              <span className="block font-playfair italic text-4xl sm:text-5xl md:text-6xl">
+            <h2 className="leading-[1.05]" style={{ color: ui.text }}>
+              <span className={`block text-4xl sm:text-5xl md:text-6xl ${display}`}>
                 {contact.headingItalic}
               </span>
-              <span className="block text-4xl sm:text-5xl md:text-6xl tracking-[-0.05em]">
+              <span className={`block text-4xl sm:text-5xl md:text-6xl ${tight} ${face}`}>
                 {contact.heading}
               </span>
             </h2>

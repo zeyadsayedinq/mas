@@ -75,21 +75,22 @@ export default function AromaPage() {
 
       <About brand={brand} showPlate={false} />
 
-      {/* Lavazza, on a dark ground so the cup carries the section. */}
+      {/* The bar: coffee, but also everything else poured here. Dark ground so
+          the glass carries the section. */}
       <div id="showcase-coffee">
         <ScrollShowcase
-          headingItalic="Lavazza,"
-          heading="pulled to order."
+          headingItalic="Beverage,"
+          heading="poured to order."
           {...dark}
           accent={brand.accent}
           accentText={brand.accentText}
           items={pick("beverages", "hot")}
-          menuLabel="See all drinks"
+          menuLabel="See the full drinks list"
           features={[
-            { label: "Lavazza beans, ground per cup", corner: "tl", icon: <Coffee size={18} /> },
-            { label: "Hot, iced, matcha and frappe", corner: "tr", icon: <Leaf size={18} /> },
-            { label: "Same recipe every shift", corner: "bl", icon: <Clock size={18} /> },
-            { label: "Served from open to close", corner: "br", icon: <Users size={18} /> },
+            { label: "Espresso bar, beans ground per cup", corner: "tl", icon: <Coffee size={18} /> },
+            { label: "Fresh juice, smoothies and mojitos", corner: "tr", icon: <Leaf size={18} /> },
+            { label: "Tea, matcha, frappe and milkshakes", corner: "bl", icon: <Clock size={18} /> },
+            { label: "Hot or iced, from open to close", corner: "br", icon: <Users size={18} /> },
           ]}
         >
           <CoffeeCup accent={brand.accent} className="w-full h-auto" />
@@ -99,7 +100,7 @@ export default function AromaPage() {
       {/* The grill, which is the half of the kitchen the coffee hides. */}
       <div id="showcase-grill">
         <ScrollShowcase
-          headingItalic="Rib eye,"
+          headingItalic="Food,"
           heading="off the grill."
           {...dark}
           accent={brand.accent}
@@ -119,7 +120,7 @@ export default function AromaPage() {
 
       {/* Feteer, back on the light ground. */}
       <ScrollShowcase
-        headingItalic="Feteer,"
+        headingItalic="Feteer & Pizza,"
         heading="made to order."
         bg={ui.bgAlt}
         text={ui.text}

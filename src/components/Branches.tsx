@@ -116,7 +116,7 @@ export default function Branches({ brand }: BranchesProps) {
                   <li className="flex gap-3">
                     <Star size={16} className="shrink-0 mt-0.5" style={{ color: brand.accent }} />
                     <span style={{ color: ui.textMuted }}>
-                      {active.rating} on Google, {active.reviews} reviews · {active.priceRange}
+                      {active.rating} on Google, {active.reviews} reviews
                     </span>
                   </li>
                 )}

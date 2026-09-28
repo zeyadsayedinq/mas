@@ -11,7 +11,7 @@ export default function Footer({ brand }: FooterProps) {
   const isParent = brand.key === "mas";
   const ui = brand.ui;
   const light = ui.scheme === "light";
-  const logoFilter = light || brand.key === "mas" ? undefined : "brightness(0) invert(1)";
+  const logoFilter = light ? undefined : "brightness(0) invert(1)";
 
   return (
     <footer
@@ -21,24 +21,51 @@ export default function Footer({ brand }: FooterProps) {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-12 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            {brand.logo ? (
+            {isParent ? (
+              /* The bilingual stacked lockup: Arabic in Aref Ruqaa, centred
+                 under the wordmark and separated by a hairline the width of
+                 the Arabic. It never sits beside the mark on a line. */
+              <span className="inline-flex flex-col items-start">
+                <img
+                  src={light ? brand.logo! : brand.logoReversed ?? brand.logo!}
+                  alt={brand.name}
+                  className="h-9 w-auto"
+                />
+                <span
+                  className="font-archivo mt-1.5 text-[7px] font-medium uppercase"
+                  style={{ color: ui.text, opacity: 0.7, letterSpacing: "0.3em" }}
+                >
+                  Egypt · Food &amp; Beverage Group
+                </span>
+                {/* The hairline takes the width of the Arabic, and the Arabic
+                    sits under the mark rather than beside it: on a line the
+                    laps make the pair read as broken. */}
+                <span className="mt-4 inline-flex flex-col items-stretch">
+                  <span className="h-px w-full" style={{ background: brand.accent, opacity: 0.7 }} />
+                  <span
+                    className="font-ruqaa mt-3 text-2xl text-center"
+                    style={{ color: ui.text, lineHeight: 1.8 }}
+                  >
+                    {brand.nameAr}
+                  </span>
+                </span>
+              </span>
+            ) : (
               <img
                 src={brand.logo}
                 alt={brand.name}
                 className="h-9 w-auto"
-                style={{ filter: logoFilter, opacity: light || brand.key === "mas" ? 1 : 0.85 }}
+                style={{ filter: logoFilter, opacity: light ? 1 : 0.85 }}
               />
-            ) : (
-              <p className="text-2xl font-playfair italic" style={{ color: ui.text }}>
-                {brand.name}
-              </p>
             )}
-            <p className="mt-3 text-sm" style={{ color: ui.textFaint }}>
+            <p className="mt-4 text-sm" style={{ color: ui.textFaint }}>
               {brand.descriptor}
             </p>
-            <p className="mt-1 text-sm" style={{ color: ui.textFaint }}>
-              {brand.nameAr}
-            </p>
+            {!isParent && (
+              <p className="mt-1 text-sm" style={{ color: ui.textFaint }}>
+                {brand.nameAr}
+              </p>
+            )}
 
             {brand.instagram && (
               <a
@@ -82,7 +109,7 @@ export default function Footer({ brand }: FooterProps) {
               ))}
               <li>
                 <Link
-                  to="/#management"
+                  to="/#services"
                   className="text-sm transition-opacity hover:opacity-100 opacity-80"
                   style={{ color: ui.textMuted }}
                 >
@@ -121,10 +148,10 @@ export default function Footer({ brand }: FooterProps) {
           style={{ borderColor: ui.line }}
         >
           <p className="text-xs" style={{ color: ui.textFaint }}>
-            {new Date().getFullYear()} {BRANDS.mas.name}. All rights reserved.
+            © {new Date().getFullYear()} {BRANDS.mas.name}. All rights reserved.
           </p>
           <p className="text-xs" style={{ color: ui.textFaint }}>
-            Owned brands and managed venues.
+Owned brands and venues operated for third party owners.
           </p>
         </div>
       </div>

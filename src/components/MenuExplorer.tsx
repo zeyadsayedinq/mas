@@ -154,14 +154,9 @@ export default function MenuExplorer({ brand }: MenuExplorerProps) {
             {items.map((item, i) => (
               <Reveal key={`${item.name}-${i}`} delay={Math.min(0.3, i * 0.03)}>
                 <div className="h-full px-6 py-6 flex flex-col gap-2" style={{ background: ui.bgSoft }}>
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-[15px] font-medium leading-snug" style={{ color: ui.text }}>
-                      {item.name}
-                    </p>
-                    <p className="text-sm shrink-0 tabular-nums" style={{ color: brand.accent }}>
-                      {item.price}
-                    </p>
-                  </div>
+                  <p className="text-[15px] font-medium leading-snug" style={{ color: ui.text }}>
+                    {item.name}
+                  </p>
                   {item.description && (
                     <p className="text-sm leading-relaxed" style={{ color: ui.textMuted }}>
                       {item.description}
@@ -179,8 +174,7 @@ export default function MenuExplorer({ brand }: MenuExplorerProps) {
         )}
 
         <p className="mt-6 text-xs" style={{ color: ui.textFaint }}>
-          Prices in EGP. Service and taxes not included. Shisha is served on the
-          terrace, ask the team for the current selection.
+          Shisha is served on the terrace, ask the team for the current selection.
         </p>
       </div>
     </section>

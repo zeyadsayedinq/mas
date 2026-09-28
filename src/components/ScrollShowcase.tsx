@@ -51,7 +51,7 @@ const CORNER_OFFSET: Record<ShowcaseFeature["corner"], number> = {
  * fly in one after another as scroll progress passes each threshold.
  *
  * The product is also a button. Clicking it opens the real menu items for that
- * part of the kitchen, with prices, and a way through to the full menu.
+ * part of the kitchen, and a way through to the full menu.
  */
 export default function ScrollShowcase({
   children,
@@ -228,16 +228,9 @@ export default function ScrollShowcase({
 
             <ul className="space-y-3 mb-6">
               {items.map((item) => (
-                <li key={item.name} className="flex items-baseline justify-between gap-4">
+                <li key={item.name}>
                   <span className="text-sm sm:text-[15px]" style={{ color: text }}>
                     {item.name}
-                  </span>
-                  <span
-                    className="flex-1 border-b border-dashed self-end mb-1"
-                    style={{ borderColor: line }}
-                  />
-                  <span className="text-sm shrink-0 tabular-nums" style={{ color: accent }}>
-                    {item.price}
                   </span>
                 </li>
               ))}

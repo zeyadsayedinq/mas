@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, MapPin } from "lucide-react";
 import Reveal from "./Reveal";
+import Eyebrow from "./Eyebrow";
 import { OpenNowBadge } from "./Branches";
 import { BRANCHES, mapsUrl } from "../branches";
 import { BRANDS, type Brand } from "../brands";
@@ -26,9 +27,9 @@ export default function Locations({ brand }: LocationsProps) {
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
           <Reveal>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] mb-4" style={{ color: brand.accent }}>
+              <Eyebrow brand={brand} className="mb-4">
                 Where to find us
-              </p>
+              </Eyebrow>
               <h2 className="text-3xl sm:text-4xl tracking-[-0.04em]" style={{ color: ui.text }}>
                 Open across New Cairo.
               </h2>

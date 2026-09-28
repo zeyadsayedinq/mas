@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import Nav from "../components/Nav";
-import Hero from "../components/Hero";
+import CovyHero from "../components/CovyHero";
+import CovyWork from "../components/CovyWork";
+import CovyMenu from "../components/CovyMenu";
 import About from "../components/About";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
@@ -11,7 +13,14 @@ interface BrandPageProps {
   brandKey: "covy";
 }
 
-/** COVY. Aroma has its own page since it runs light and carries more. */
+/**
+ * COVY. Adapted from Aroma's "come work here" idea — wifi, power, coffee, a
+ * quiet seat — but built as its own page rather than a recolour: a split
+ * hero instead of a full-bleed one, a horizontal-scroll rail instead of a
+ * fixed grid for the feature set, and the menu left as an honest placeholder
+ * until COVY has one to publish. Colours stay COVY's own navy and mocha
+ * throughout; nothing here borrows Aroma's green.
+ */
 export default function BrandPage({ brandKey }: BrandPageProps) {
   const brand = BRANDS[brandKey];
   const cursor = useSmoothCursor();
@@ -27,7 +36,9 @@ export default function BrandPage({ brandKey }: BrandPageProps) {
       style={{ fontFamily: "'Inter', sans-serif", background: brand.ui.bg }}
     >
       <Nav brand={brand} showParentLink />
-      <Hero brand={brand} cursor={cursor} ctaTarget="about" />
+      <CovyHero brand={brand} cursor={cursor} ctaTarget="contact" />
+      <CovyWork brand={brand} />
+      <CovyMenu brand={brand} />
       <About brand={brand} />
       <Contact brand={brand} defaultSubject={brand.name} />
       <Footer brand={brand} />

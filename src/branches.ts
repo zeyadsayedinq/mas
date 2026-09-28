@@ -27,7 +27,6 @@ export interface Branch {
   phone: string;
   /** International format, digits only, for the WhatsApp deep link. */
   whatsapp: string;
-  priceRange: string;
   rating?: number;
   reviews?: string;
   tags: string[];
@@ -48,7 +47,6 @@ export const BRANCHES: Branch[] = [
     hours: ALL_WEEK("08:00", "02:00"), // PLACEHOLDER
     phone: "+20 000 000 0000", // PLACEHOLDER
     whatsapp: "200000000000", // PLACEHOLDER
-    priceRange: "EGP 200 to 1,200",
     rating: 4.7,
     reviews: "1.5K",
     tags: ["Restaurant", "Terrace", "Shisha", "Desks"],
@@ -63,7 +61,6 @@ export const BRANCHES: Branch[] = [
     hours: ALL_WEEK("09:00", "01:00"), // PLACEHOLDER
     phone: "+20 000 000 0000", // PLACEHOLDER
     whatsapp: "200000000000", // PLACEHOLDER
-    priceRange: "EGP 400 to 600",
     rating: 4.9,
     reviews: "80",
     tags: ["Family friendly", "Terrace", "Shisha"],

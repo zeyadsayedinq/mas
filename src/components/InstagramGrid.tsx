@@ -24,7 +24,7 @@ const PLACEHOLDER_CAPTIONS = [
   "On the grill",
   "Terrace at dusk",
   "Desk corner",
-  "Lavazza pour",
+  "At the bar",
   "Weekend service",
   "The room",
   "Late shisha",

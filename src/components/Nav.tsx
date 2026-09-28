@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, ArrowUpLeft, AtSign } from "lucide-react";
-import type { Brand } from "../brands";
+import { buttonColors, displayClass, type Brand } from "../brands";
 
 interface NavProps {
   brand: Brand;
@@ -12,6 +12,47 @@ interface NavProps {
    * Aroma's hero is bright at the top so it overrides this itself.
    */
   onLight?: boolean;
+}
+
+/**
+ * The group lockup: the drawn wordmark with the Archivo descriptor under it.
+ *
+ * The identity manual sets the descriptor in Archivo 500 tracked +0.3em, at 9%
+ * of the wordmark's width, aligned to its left edge. The mark itself is drawn
+ * artwork and is never re-set from a font, so it ships as SVG and is only ever
+ * swapped between the supplied colourways, never recoloured.
+ */
+function Lockup({
+  src,
+  color,
+  small = false,
+  descriptor = true,
+}: {
+  src: string;
+  color: string;
+  small?: boolean;
+  descriptor?: boolean;
+}) {
+  return (
+    <span className="flex flex-col items-start gap-1">
+      <img src={src} alt="MAS Egypt" className={small ? "h-5 w-auto" : "h-6 sm:h-7 w-auto"} />
+      {descriptor && (
+        <span
+          className="font-archivo hidden sm:block text-[7px] font-medium uppercase whitespace-nowrap"
+          style={{ color, opacity: 0.7, letterSpacing: "0.3em" }}
+        >
+          Egypt · Food &amp; Beverage Group
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** Hex to rgba, so translucent grounds can follow the brand's own surface. */
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
 function scrollToSection(id: string) {
@@ -28,11 +69,11 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
   // On a light page the logo keeps its real colours. On a dark one it is
   // reversed to white, the way a brand's own dark version would be.
-  const logoFilter = light || brand.key === "mas" ? undefined : "brightness(0) invert(1)";
+  const logoFilter = light ? undefined : "brightness(0) invert(1)";
   const fg = light ? brand.ui.text : "#ffffff";
   const fgMuted = light ? brand.ui.textMuted : "rgba(255,255,255,0.8)";
-  const pillBg = light ? "rgba(35,48,26,0.06)" : "rgba(255,255,255,0.2)";
-  const pillLine = light ? "rgba(35,48,26,0.12)" : "rgba(255,255,255,0.3)";
+  const pillBg = light ? "rgba(0,0,0,0.045)" : "rgba(255,255,255,0.2)";
+  const pillLine = light ? brand.ui.line : "rgba(255,255,255,0.3)";
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -48,15 +89,16 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between p-4 sm:p-5">
+      <nav
+        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between p-4 sm:px-6 sm:py-4"
+        style={light ? { background: hexToRgba(brand.ui.bg, 0.9), backdropFilter: "blur(10px)", borderBottom: `1px solid ${brand.ui.line}` } : undefined}
+      >
         <div className="flex items-center gap-3">
           <Link to={brand.path} className="flex items-center gap-2" style={{ color: fg }} aria-label={brand.name}>
-            {brand.logo ? (
-              <img src={brand.logo} alt={brand.name} className="h-8 sm:h-10 w-auto" style={{ filter: logoFilter }} />
-            ) : brand.mark ? (
-              <img src={brand.mark} alt={brand.name} className="h-8 sm:h-10 w-auto" style={{ filter: logoFilter }} />
+            {brand.key === "mas" ? (
+              <Lockup src={light ? brand.logo! : brand.logoReversed ?? brand.logo!} color={fg} />
             ) : (
-              <span className="text-xl sm:text-2xl font-playfair italic">{brand.name}</span>
+              <img src={brand.logo} alt={brand.name} className="h-8 sm:h-10 w-auto" style={{ filter: logoFilter }} />
             )}
           </Link>
 
@@ -80,7 +122,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
             <button
               key={item.label}
               onClick={() => go(item.target)}
-              className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors hover:opacity-100"
+              className="font-archivo px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors hover:opacity-100"
               style={{ color: i === 0 ? fg : fgMuted }}
             >
               {item.label}
@@ -103,12 +145,8 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
           )}
           <button
             onClick={() => go(brand.key === "aroma" ? "reserve" : "contact")}
-            className="text-sm font-semibold px-6 py-2.5 rounded-full transition-transform hover:scale-[1.02]"
-            style={
-              light
-                ? { background: brand.accent, color: brand.accentText }
-                : { background: "#ffffff", color: "#111827" }
-            }
+            className="font-archivo text-[13px] font-semibold px-6 py-2.5 rounded-full transition-transform hover:scale-[1.02]"
+            style={light ? buttonColors(brand) : { background: "#ffffff", color: "#111827" }}
           >
             {brand.navCta}
           </button>
@@ -128,16 +166,14 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
       {open && (
         <div
           className="fixed inset-0 z-[110] backdrop-blur-sm md:hidden flex flex-col"
-          style={{ background: light ? "rgba(250,246,239,0.97)" : "rgba(0,0,0,0.94)" }}
+          style={{ background: light ? hexToRgba(brand.ui.bg, 0.97) : "rgba(0,0,0,0.94)" }}
         >
           <div className="flex items-center justify-between p-4">
             <span className="flex items-center gap-2" style={{ color: fg }}>
-              {brand.logo ? (
-                <img src={brand.logo} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
-              ) : brand.mark ? (
-                <img src={brand.mark} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
+              {brand.key === "mas" ? (
+                <Lockup src={light ? brand.logo! : brand.logoReversed ?? brand.logo!} color={fg} small descriptor={false} />
               ) : (
-                <span className="text-xl font-playfair italic">{brand.name}</span>
+                <img src={brand.logo} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
               )}
             </span>
             <button onClick={() => setOpen(false)} className="p-2 rounded-full" style={{ color: fg }} aria-label="Close menu">
@@ -150,7 +186,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
               <button
                 key={item.label}
                 onClick={() => go(item.target)}
-                className="text-left text-3xl font-playfair italic py-2.5 border-b"
+                className={`text-left text-3xl py-2.5 border-b ${displayClass(brand.ui) || "font-medium tracking-[-0.02em]"}`}
                 style={{ color: fg, borderColor: pillLine }}
               >
                 {item.label}
@@ -160,7 +196,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
             <button
               onClick={() => go(brand.key === "aroma" ? "reserve" : "contact")}
               className="mt-6 self-start text-sm font-semibold px-7 py-3 rounded-full"
-              style={{ background: brand.accent, color: brand.accentText }}
+              style={buttonColors(brand)}
             >
               {brand.navCta}
             </button>

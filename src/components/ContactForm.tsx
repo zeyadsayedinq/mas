@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Check, AlertCircle, Loader2 } from "lucide-react";
 import Reveal from "./Reveal";
-import { BRANDS, type Brand } from "../brands";
+import { BRANDS, type Brand, buttonColors } from "../brands";
 import { FORMSPREE_ENDPOINT } from "../config";
 
 interface ContactFormProps {
@@ -88,7 +88,7 @@ export default function ContactForm({ brand, defaultSubject }: ContactFormProps)
         >
           <span
             className="shrink-0 mt-0.5 rounded-full p-2"
-            style={{ background: brand.accent, color: brand.accentText }}
+            style={buttonColors(brand)}
           >
             <Check size={16} />
           </span>
@@ -217,7 +217,7 @@ export default function ContactForm({ brand, defaultSubject }: ContactFormProps)
           type="submit"
           disabled={status === "sending"}
           className="inline-flex items-center gap-2 text-sm font-medium px-8 py-3.5 rounded-full transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: brand.accent, color: brand.accentText }}
+          style={buttonColors(brand)}
         >
           {status === "sending" && <Loader2 size={15} className="animate-spin" />}
           {status === "sending" ? "Sending" : "Send message"}

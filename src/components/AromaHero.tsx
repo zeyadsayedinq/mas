@@ -36,26 +36,22 @@ export default function AromaHero({ brand }: AromaHeroProps) {
       />
 
       <div className="absolute top-[14%] left-0 right-0 z-50 flex flex-col items-center text-center px-5 pointer-events-none">
-        <h1 className="leading-[0.95]" style={{ color: ui.onHero }}>
-          <span
-            className="hero-anim hero-reveal block font-playfair italic font-normal text-[2.6rem] sm:text-7xl md:text-8xl"
-            style={{ letterSpacing: "-0.05em", animationDelay: "0.25s" }}
-          >
-            {brand.hero.line1}
-          </span>
-          <span
-            className="hero-anim hero-reveal block font-normal text-[2rem] sm:text-5xl md:text-6xl -mt-1 sm:mt-1"
-            style={{ letterSpacing: "-0.05em", animationDelay: "0.42s" }}
-          >
-            {brand.hero.line2}
-          </span>
-        </h1>
+        {/* The supplied lockup carries the name here rather than set type, so
+            the hero shows the brand exactly as it is drawn. The h1 keeps the
+            name for screen readers and for the document outline. */}
+        <h1 className="sr-only">{brand.name}</h1>
+        <img
+          src={brand.logo}
+          alt={brand.name}
+          className="hero-anim hero-reveal h-24 sm:h-32 md:h-36 w-auto max-w-[80vw]"
+          style={{ animationDelay: "0.25s" }}
+        />
 
         <div
           className="hero-anim hero-fade mt-6 flex flex-wrap items-center justify-center gap-2"
           style={{ animationDelay: "0.6s" }}
         >
-          {["Lavazza coffee", "Feteer", "Grill", "Shisha", "Work desks"].map((t) => (
+          {["Coffee & drinks", "Feteer & Pizza", "Grill", "Shisha", "Work desks"].map((t) => (
             <span
               key={t}
               className="text-[11px] sm:text-xs font-medium px-3.5 py-1.5 rounded-full backdrop-blur-sm"

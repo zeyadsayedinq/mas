@@ -6,72 +6,108 @@ interface DesksProps {
   brand: Brand;
 }
 
+/**
+ * A morning palette, local to this section only. Warm cream instead of the
+ * site's neutral ground, amber for the glow and the small icon warmth, sage
+ * for the one thing that has to read as an action (the button).
+ */
+const MORNING = {
+  bg: "linear-gradient(180deg, #FFF9EE 0%, #FDF2DC 60%, #FBEBCB 100%)",
+  glow1: "radial-gradient(circle, rgba(255,196,120,0.45) 0%, rgba(255,196,120,0) 70%)",
+  glow2: "radial-gradient(circle, rgba(130,165,65,0.22) 0%, rgba(130,165,65,0) 70%)",
+  text: "#3A2E1F",
+  textMuted: "rgba(58,46,31,0.72)",
+  cardBg: "rgba(255,255,255,0.55)",
+  cardBorder: "rgba(201,138,52,0.22)",
+  cardShadow: "0 12px 34px -16px rgba(201,138,52,0.32)",
+  amber: "#B9812E",
+  amberSoft: "rgba(201,138,52,0.14)",
+  sage: "#4F6F52",
+  sageHover: "#3f5a42",
+};
+
 const FEATURES = [
-  { icon: Wifi, title: "Wifi that holds", body: "Fibre on both floors, and it does not drop when the room fills up." },
-  { icon: Plug, title: "Power at the table", body: "Sockets at every desk seat, so nobody is hunting for a wall." },
-  { icon: Volume2, title: "A quieter half", body: "The desk area sits away from the terrace and the pass." },
+  { icon: Wifi, title: "Wifi that holds", body: "Fibre on both floors, so a morning deadline never waits on a spinner." },
+  { icon: Plug, title: "Power at the table", body: "A socket at every seat, so nobody is hunting for a wall." },
+  { icon: Volume2, title: "A quieter half", body: "The desk area sits away from the terrace, calm enough to hear yourself think." },
   { icon: Clock, title: "Stay as long as you like", body: "No timers, no two hour limit, no polite hovering." },
-  { icon: Coffee, title: "Lavazza on tap", body: "Refills at the bar without giving up your seat." },
+  { icon: Coffee, title: "Fresh coffee, always brewing", body: "A cup at your elbow without giving up your seat." },
   { icon: Printer, title: "Print and scan", body: "Ask the floor team. Useful the week a thesis is due." },
 ];
 
 /**
  * Students, freelancers and remote workers are a different customer with a
  * different reason to come, so this gets its own section rather than a menu
- * line. It is the part of the offer nobody nearby is presenting properly.
+ * line. It runs its own bright, sunlit-morning mood rather than the rest of
+ * the page's palette, since it is selling a feeling as much as a desk.
  */
-export default function Desks({ brand }: DesksProps) {
-  const ui = brand.ui;
-
+export default function Desks(_props: DesksProps) {
   return (
     <section
       id="desks"
-      className="relative px-5 sm:px-10 md:px-14 py-24 sm:py-32"
-      style={{ background: ui.bgAlt }}
+      className="relative overflow-hidden px-5 sm:px-10 md:px-14 py-24 sm:py-32"
+      style={{ background: MORNING.bg }}
     >
-      <div className="mx-auto max-w-6xl">
+      {/* Sunrise glow, upper left, and a faint answering sage glow lower right. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 -left-24 h-[480px] w-[480px] rounded-full"
+        style={{ background: MORNING.glow1 }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 -right-24 h-[420px] w-[420px] rounded-full"
+        style={{ background: MORNING.glow2 }}
+      />
+
+      <div className="relative mx-auto max-w-6xl">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
           <div>
             <Reveal>
-              <p className="text-[11px] uppercase tracking-[0.22em] mb-6" style={{ color: brand.accent }}>
-                Work from Aroma
+              <p className="text-[11px] uppercase tracking-[0.22em] mb-6" style={{ color: MORNING.amber }}>
+                Morning at Aroma
               </p>
             </Reveal>
 
             <Reveal delay={0.06}>
-              <h2 className="leading-[1.0] tracking-[-0.03em]" style={{ color: ui.text }}>
-                <span className="block font-playfair italic text-4xl sm:text-5xl md:text-6xl">Bring the laptop.</span>
-                <span className="block text-4xl sm:text-5xl md:text-6xl tracking-[-0.05em]">Stay the day.</span>
+              <h2 className="leading-[1.0] tracking-[-0.03em]" style={{ color: MORNING.text }}>
+                <span className="block font-playfair italic text-4xl sm:text-5xl md:text-6xl">Start your morning right.</span>
+                <span className="block text-4xl sm:text-5xl md:text-6xl tracking-[-0.05em]">warm coffee, quiet focus.</span>
               </h2>
             </Reveal>
 
             <Reveal delay={0.12}>
-              <p className="mt-7 text-[15px] leading-relaxed max-w-md" style={{ color: ui.textMuted }}>
-                A section of the room is built for people who came to work. Proper
-                desks, proper chairs, power and wifi, and a kitchen you do not have
-                to leave the building for. Students before exams, freelancers on
-                deadline, remote teams who needed somewhere better than home.
+              <p className="mt-7 text-[15px] leading-relaxed max-w-md" style={{ color: MORNING.textMuted }}>
+                Come early, while the light is still soft and the room is still
+                quiet. A section built for people who came to work: proper desks,
+                proper chairs, fresh brewed coffee within reach, and enough calm
+                to actually get through the list. Students before exams,
+                freelancers on deadline, remote teams who needed somewhere
+                better than home to start the day.
               </p>
             </Reveal>
 
             <Reveal delay={0.18}>
               <div
-                className="mt-9 rounded-xl border p-6 sm:p-7"
-                style={{ borderColor: ui.line, background: ui.bgSoft }}
+                className="mt-9 rounded-xl p-6 sm:p-7 backdrop-blur-md"
+                style={{ border: `1px solid ${MORNING.cardBorder}`, background: MORNING.cardBg, boxShadow: MORNING.cardShadow }}
               >
-                <p className="text-[11px] uppercase tracking-[0.18em] mb-3" style={{ color: brand.accent }}>
+                <p className="text-[11px] uppercase tracking-[0.18em] mb-3" style={{ color: MORNING.amber }}>
                   Day pass
                 </p>
-                <p className="text-[15px] leading-relaxed mb-5" style={{ color: ui.textMuted }}>
-                  A desk for the working day, with your first coffee included. Ask at
-                  the bar or reserve one with your table.
+                <p className="text-[15px] leading-relaxed mb-5" style={{ color: MORNING.textMuted }}>
+                  A desk for the working day, with your first coffee included, right
+                  as the morning light comes in. Ask at the bar or reserve one with
+                  your table.
                 </p>
                 <button
                   onClick={() =>
                     document.getElementById("reserve")?.scrollIntoView({ behavior: "smooth", block: "start" })
                   }
                   className="text-sm font-medium px-7 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
-                  style={{ background: brand.accent, color: brand.accentText }}
+                  style={{ background: MORNING.sage, color: "#FFFFFF", boxShadow: "0 10px 24px -10px rgba(79,111,82,0.5)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = MORNING.sageHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = MORNING.sage)}
                 >
                   Reserve a desk
                 </button>
@@ -79,17 +115,23 @@ export default function Desks({ brand }: DesksProps) {
             </Reveal>
           </div>
 
-          <div className="grid gap-px sm:grid-cols-2 rounded-lg overflow-hidden self-start" style={{ background: ui.line }}>
+          <div className="grid gap-4 sm:grid-cols-2 self-start">
             {FEATURES.map((f, i) => (
               <Reveal key={f.title} delay={0.08 + i * 0.05}>
-                <div className="h-full px-6 py-7" style={{ background: ui.bgSoft }}>
-                  <span className="block mb-3.5" style={{ color: brand.accent }}>
-                    <f.icon size={20} />
+                <div
+                  className="h-full px-6 py-7 rounded-xl backdrop-blur-md transition-transform hover:-translate-y-0.5"
+                  style={{ border: `1px solid ${MORNING.cardBorder}`, background: MORNING.cardBg, boxShadow: MORNING.cardShadow }}
+                >
+                  <span
+                    className="inline-flex items-center justify-center h-10 w-10 rounded-full mb-3.5"
+                    style={{ background: MORNING.amberSoft, color: MORNING.amber }}
+                  >
+                    <f.icon size={18} />
                   </span>
-                  <p className="text-[15px] font-medium mb-1.5" style={{ color: ui.text }}>
+                  <p className="text-[15px] font-medium mb-1.5" style={{ color: MORNING.text }}>
                     {f.title}
                   </p>
-                  <p className="text-sm leading-relaxed" style={{ color: ui.textMuted }}>
+                  <p className="text-sm leading-relaxed" style={{ color: MORNING.textMuted }}>
                     {f.body}
                   </p>
                 </div>

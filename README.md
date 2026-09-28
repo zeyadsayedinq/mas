@@ -182,11 +182,3 @@ there the lockup keeps its real colours throughout.
 serve `index.html` for unknown paths, otherwise a direct hit on `/aroma` will
 404. A `_redirects` file for Netlify is already in `public/`. Vercel handles
 this by default.
-
-## MAS Egypt master-brand assets
-
-The MAS Egypt parent page now uses the supplied Edition 04 master-brand artwork:
-`mas-wordmark-cream.svg` in the header and footer, `mas-wordmark-cocoa.svg` on the
-Kraft about plate, `mas-stone-cream.svg` as the supplied mark, and
-`mas-seal-cream.svg` as the site favicon. Aroma Lounge and COVY house lockups are
-unchanged.

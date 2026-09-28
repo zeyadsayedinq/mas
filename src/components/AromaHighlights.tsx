@@ -27,7 +27,7 @@ export default function AromaHighlights({ brand }: { brand: Brand }) {
         {stats.map((s, i) => (
           <Reveal key={s.label} delay={i * 0.06}>
             <div className={`px-4 sm:px-6 ${i % 2 === 1 ? "border-l" : ""} ${i > 0 ? "lg:border-l" : ""} ${i === 2 ? "lg:border-l" : ""}`} style={{ borderColor: ui.line }}>
-              <p className="font-playfair italic text-4xl sm:text-5xl leading-none" style={{ color: ui.text }}>
+              <p className="italic text-4xl sm:text-5xl leading-none" style={{ fontFamily: "Fraunces, Georgia, serif", color: ui.text }}>
                 {s.value}
                 {s.suffix && <span className="ml-1 text-base not-italic font-sans" style={{ color: ui.textFaint }}>{s.suffix}</span>}
               </p>

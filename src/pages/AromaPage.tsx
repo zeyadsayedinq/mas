@@ -6,6 +6,7 @@ import AromaHighlights from "../components/AromaHighlights";
 import StickyReserve from "../components/StickyReserve";
 import ScrollShowcase from "../components/ScrollShowcase";
 import { CoffeeCup, Feteer, Ribeye } from "../components/ProductArt";
+import { Model3D } from "../components/Aroma3D";
 import About from "../components/About";
 import MenuExplorer from "../components/MenuExplorer";
 import Desks from "../components/Desks";
@@ -13,7 +14,8 @@ import Branches from "../components/Branches";
 import Reservation from "../components/Reservation";
 import InstagramGrid from "../components/InstagramGrid";
 import Contact from "../components/Contact";
-import Footer from "../components/Footer";
+import { ReelIntro, ReelSpace, ReelTable } from "../components/AromaReels";
+import AromaFooter from "../components/AromaFooter";
 import { BRANDS } from "../brands";
 import { MENU } from "../menu";
 
@@ -51,13 +53,14 @@ export default function AromaPage() {
 
   return (
     <div
-      className="min-h-screen tracking-[-0.02em]"
-      style={{ fontFamily: "'Inter', sans-serif", background: ui.bg }}
+      className="aroma-type min-h-screen tracking-[-0.01em]"
+      style={{ background: ui.bg }}
     >
       <Nav brand={brand} showParentLink onLight />
 
       <AromaHero brand={brand} />
       <AromaHighlights brand={brand} />
+      <ReelIntro brand={brand} />
 
       <About brand={brand} showPlate={false} />
 
@@ -79,7 +82,7 @@ export default function AromaPage() {
             { label: "Hot or iced, from open to close", corner: "br", icon: <Users size={18} /> },
           ]}
         >
-          <CoffeeCup accent={brand.accent} className="w-full h-auto" />
+          <Model3D kind="iced" accent={brand.accent} label="Iced coffee, turning as you scroll" fallback={<CoffeeCup accent={brand.accent} className="w-full h-auto" />} />
         </ScrollShowcase>
       </div>
 
@@ -101,11 +104,12 @@ export default function AromaPage() {
             { label: "Chicken, salmon and seafood too", corner: "br", icon: <Users size={18} /> },
           ]}
         >
-          <Ribeye accent={brand.accent} className="w-full h-auto" />
+          <Model3D kind="steak" accent={brand.accent} label="Grilled steak, turning as you scroll" fallback={<Ribeye accent={brand.accent} className="w-full h-auto" />} />
         </ScrollShowcase>
       </div>
 
       {/* Feteer, on white. */}
+      <div id="showcase-feteer">
       <ScrollShowcase
         headingItalic="Feteer & Pizza,"
         heading="made to order."
@@ -126,16 +130,19 @@ export default function AromaPage() {
           { label: "Cut to share", corner: "br", icon: <Users size={18} /> },
         ]}
       >
-        <Feteer accent={brand.accent} className="w-full h-auto" />
+        <Model3D kind="feteer" accent={brand.accent} label="Feteer, turning as you scroll" fallback={<Feteer accent={brand.accent} className="w-full h-auto" />} />
       </ScrollShowcase>
+      </div>
 
       <MenuExplorer brand={brand} />
+      <ReelSpace brand={brand} />
       <Desks brand={brand} />
       <Branches brand={brand} />
+      <ReelTable brand={brand} />
       <Reservation brand={brand} />
       <InstagramGrid brand={brand} />
       <Contact brand={brand} defaultSubject={brand.name} />
-      <Footer brand={brand} />
+      <AromaFooter brand={brand} />
       <StickyReserve brand={brand} />
     </div>
   );

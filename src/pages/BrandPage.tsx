@@ -6,7 +6,7 @@ import CovyWork from "../components/CovyWork";
 import CovyMenu from "../components/CovyMenu";
 import About from "../components/About";
 import Contact from "../components/Contact";
-import Footer from "../components/Footer";
+import CovyFooter from "../components/CovyFooter";
 import { BRANDS, type Brand } from "../brands";
 import greigeWordmark from "../assets/brand/covy-wordmark-greige.png";
 
@@ -112,8 +112,8 @@ export default function BrandPage({ brandKey }: BrandPageProps) {
 
   return (
     <div
-      className="min-h-screen tracking-[-0.02em]"
-      style={{ fontFamily: "'Inter', sans-serif", background: brand.ui.bg }}
+      className="covy-type min-h-screen"
+      style={{ background: brand.ui.bg }}
     >
       <Nav brand={brand} showParentLink onLight />
       <CovyHero brand={brand} palette={PALETTE} ctaTarget="contact" />
@@ -122,7 +122,7 @@ export default function BrandPage({ brandKey }: BrandPageProps) {
       <CovyWork brand={day} />
       <CovyMenu brand={brand} />
       <Contact brand={day} defaultSubject={brand.name} />
-      <Footer brand={brand} />
+      <CovyFooter brand={brand} />
     </div>
   );
 }

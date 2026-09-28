@@ -1,4 +1,5 @@
 import FoodBevArt from "./FoodBevArt";
+import { Hero3D } from "./Aroma3D";
 import { OpenNowBadge } from "./Branches";
 import { BRANCHES } from "../branches";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -47,10 +48,14 @@ export default function AromaHero({ brand }: AromaHeroProps) {
         />
 
         <div
-          className="hero-anim hero-fade flex-1 min-h-0 w-full max-w-[1280px] mt-2 flex items-center justify-center"
+          className="hero-anim hero-fade flex-1 min-h-0 w-full max-w-[1280px] mt-2 flex items-center justify-center [&>div]:h-full"
           style={{ animationDelay: "0.5s" }}
         >
-          <FoodBevArt accent={brand.accent} compact={compact} className="w-full h-auto max-h-full" />
+          <Hero3D
+            accent={brand.accent}
+            onPick={(k) => go(k === "steak" ? "showcase-grill" : k === "feteer" ? "showcase-feteer" : "showcase-coffee")}
+            fallback={<FoodBevArt accent={brand.accent} compact={compact} className="w-full h-auto max-h-full" />}
+          />
         </div>
 
         <div

@@ -1,5 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Reveal from "./Reveal";
+import TiltCard from "./TiltCard";
+import Magnetic from "./Magnetic";
 import { FoodBevPiece, type PieceKind } from "./FoodBevArt";
 import Sparkle from "./Sparkle";
 import type { Brand } from "../brands";
@@ -74,6 +76,7 @@ export default function CovyTonight({ brand, palette }: CovyTonightProps) {
           {CARDS.map((c, i) => (
             <div key={c.title} className="w-[80%] sm:w-[52%] md:w-auto">
               <Reveal delay={0.08 + i * 0.07} className="h-full">
+                <TiltCard className="h-full">
                 <article
                   className="h-full rounded-2xl overflow-hidden flex flex-col"
                   style={{ background: ui.bgSoft, border: `1px solid ${ui.line}` }}
@@ -102,16 +105,19 @@ export default function CovyTonight({ brand, palette }: CovyTonightProps) {
                         </li>
                       ))}
                     </ul>
-                    <button
-                      onClick={() => go(c.action.target)}
-                      className="mt-auto self-start inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
-                      style={{ background: brand.accent, color: brand.accentText }}
-                    >
-                      {c.action.label}
-                      <ArrowRight size={15} />
-                    </button>
+                    <Magnetic>
+                      <button
+                        onClick={() => go(c.action.target)}
+                        className="mt-auto self-start inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
+                        style={{ background: brand.accent, color: brand.accentText }}
+                      >
+                        {c.action.label}
+                        <ArrowRight size={15} />
+                      </button>
+                    </Magnetic>
                   </div>
                 </article>
+                </TiltCard>
               </Reveal>
             </div>
           ))}

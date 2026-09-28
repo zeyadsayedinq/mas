@@ -197,9 +197,14 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
 .covy-sweep { animation:covySweep 9s ease-in-out infinite; }
 .covy-breathe { animation:covyBreathe 7s ease-in-out infinite; }
 
-/* Curtain-style reveal on COVY only: rises slowly out of a soft blur. */
-.covy-type .scroll-reveal { transform:translateY(38px); filter:blur(7px); transition:opacity 1.4s cubic-bezier(.16,1,.3,1), transform 1.4s cubic-bezier(.16,1,.3,1), filter 1.4s cubic-bezier(.16,1,.3,1); }
+/* Curtain-style reveal on COVY only: rises slowly out of a soft blur. The
+   blur is a GPU-costly filter, so it is desktop-only; touch/phone gets the
+   same rise and fade without it, which also reads faster while scrolling. */
+.covy-type .scroll-reveal { transform:translateY(38px); transition:opacity 1.1s cubic-bezier(.16,1,.3,1), transform 1.1s cubic-bezier(.16,1,.3,1), filter 1.1s cubic-bezier(.16,1,.3,1); }
 .covy-type .scroll-reveal.is-in { transform:none; filter:none; }
+@media (hover: hover) and (min-width: 1024px) {
+  .covy-type .scroll-reveal { filter:blur(5px); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .covy-drift,.covy-drift-b,.covy-twinkle,.covy-sweep,.covy-breathe { animation:none; }

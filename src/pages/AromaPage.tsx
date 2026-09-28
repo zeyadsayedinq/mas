@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Coffee, Leaf, Croissant, Flame, Clock, Users, Beef, ChefHat } from "lucide-react";
 import Nav from "../components/Nav";
 import AromaHero from "../components/AromaHero";
@@ -30,38 +30,21 @@ function pick(sectionKey: string, categoryKey: string, count = 4) {
 export default function AromaPage() {
   const brand = BRANDS.aroma;
   const ui = brand.ui;
-  const [navOnLight, setNavOnLight] = useState(true);
 
   useEffect(() => {
     document.title = `${brand.name} | ${brand.descriptor}`;
     window.scrollTo(0, 0);
   }, [brand]);
 
-  // The coffee and grill showcases run on a dark ground, so the fixed nav has
-  // to flip to its reversed treatment while either is behind it.
-  useEffect(() => {
-    const onScroll = () => {
-      const dark = ["showcase-coffee", "showcase-grill"]
-        .map((id) => document.getElementById(id))
-        .filter(Boolean) as HTMLElement[];
-      const overDark = dark.some((el) => {
-        const r = el.getBoundingClientRect();
-        return r.top <= 80 && r.bottom >= 80;
-      });
-      setNavOnLight(!overDark);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
+  // The bar and the grill used to run on a dark ground. Aroma is the daytime
+  // room, so they now sit on clean white with a whisper of the brand green.
   const dark = {
-    bg: "#1a1512",
-    text: "#ffffff",
-    textMuted: "rgba(255,255,255,0.82)",
-    pillBg: "rgba(255,255,255,0.1)",
-    cardBg: "rgba(32,26,22,0.97)",
-    line: "rgba(255,255,255,0.18)",
+    bg: "#FFFFFF",
+    text: ui.text,
+    textMuted: ui.textMuted,
+    pillBg: "rgba(255,255,255,0.9)",
+    cardBg: "#FFFFFF",
+    line: ui.line,
   };
 
   return (
@@ -69,7 +52,7 @@ export default function AromaPage() {
       className="min-h-screen tracking-[-0.02em]"
       style={{ fontFamily: "'Inter', sans-serif", background: ui.bg }}
     >
-      <Nav brand={brand} showParentLink onLight={navOnLight} />
+      <Nav brand={brand} showParentLink onLight />
 
       <AromaHero brand={brand} />
 
@@ -103,6 +86,7 @@ export default function AromaPage() {
           headingItalic="Food,"
           heading="off the grill."
           {...dark}
+          bg={ui.bgAlt}
           accent={brand.accent}
           accentText={brand.accentText}
           items={pick("food", "main-course")}
@@ -118,16 +102,16 @@ export default function AromaPage() {
         </ScrollShowcase>
       </div>
 
-      {/* Feteer, back on the light ground. */}
+      {/* Feteer, on white. */}
       <ScrollShowcase
         headingItalic="Feteer & Pizza,"
         heading="made to order."
-        bg={ui.bgAlt}
+        bg="#FFFFFF"
         text={ui.text}
         textMuted={ui.textMuted}
         accent={brand.accent}
         accentText={brand.accentText}
-        pillBg="rgba(255,255,255,0.75)"
+        pillBg="rgba(255,255,255,0.9)"
         cardBg="#FFFFFF"
         line={ui.line}
         items={pick("food", "feteer")}

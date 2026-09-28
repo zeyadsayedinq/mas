@@ -21,11 +21,11 @@ export default function MapPanel({ brand, branches, activeKey, onSelect }: MapPa
   const ui = brand.ui;
   const light = ui.scheme === "light";
 
-  const land = light ? "#EFE7D8" : "#161d16";
-  const block = light ? "#E4D9C4" : "#1c241b";
-  const green = light ? "#D8E4C0" : "#1b2a1a";
-  const road = light ? "#FBF8F2" : "#242e23";
-  const roadMinor = light ? "#F3EDE2" : "#1f2a1f";
+  const land = light ? "#F2F4EE" : "#161d16";
+  const block = light ? "#E7EBDF" : "#1c241b";
+  const green = light ? "#DCEBC4" : "#1b2a1a";
+  const road = light ? "#FFFFFF" : "#242e23";
+  const roadMinor = light ? "#F8F9F5" : "#1f2a1f";
 
   return (
     <div

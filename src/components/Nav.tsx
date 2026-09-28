@@ -82,6 +82,15 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
     };
   }, [open]);
 
+  // Rotating an iPad into landscape switches to the full bar, so the overlay
+  // must not be left open behind it with the page locked.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const close = () => mq.matches && setOpen(false);
+    mq.addEventListener("change", close);
+    return () => mq.removeEventListener("change", close);
+  }, []);
+
   const go = (target: string) => {
     setOpen(false);
     scrollToSection(target);
@@ -90,7 +99,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between p-4 sm:px-6 sm:py-4"
+        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between p-4 sm:px-6 sm:py-4 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-[max(1rem,env(safe-area-inset-top))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))]"
         style={light ? { background: hexToRgba(brand.ui.bg, 0.9), backdropFilter: "blur(10px)", borderBottom: `1px solid ${brand.ui.line}` } : undefined}
       >
         <div className="flex items-center gap-3">
@@ -105,7 +114,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
           {showParentLink && (
             <Link
               to="/"
-              className="hidden lg:flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] transition-opacity hover:opacity-100 opacity-60 border-l pl-3 ml-1"
+              className="hidden xl:flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] transition-opacity hover:opacity-100 opacity-60 border-l pl-3 ml-1"
               style={{ color: fg, borderColor: pillLine }}
             >
               <ArrowUpLeft size={13} />
@@ -115,7 +124,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
         </div>
 
         <div
-          className="hidden md:flex absolute left-1/2 -translate-x-1/2 backdrop-blur-md border rounded-full px-2 py-2 items-center gap-1"
+          className="hidden lg:flex absolute left-1/2 -translate-x-1/2 backdrop-blur-md border rounded-full px-2 py-2 items-center gap-1"
           style={{ background: pillBg, borderColor: pillLine }}
         >
           {brand.nav.map((item, i) => (
@@ -130,7 +139,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           {brand.instagram && (
             <a
               href={`https://instagram.com/${brand.instagram}`}
@@ -154,7 +163,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
         <button
           onClick={() => setOpen(true)}
-          className="md:hidden p-2 rounded-full"
+          className="lg:hidden p-3 -mr-2 rounded-full"
           style={{ color: fg }}
           aria-label="Open menu"
           aria-expanded={open}
@@ -165,7 +174,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
       {open && (
         <div
-          className="fixed inset-0 z-[110] backdrop-blur-sm md:hidden flex flex-col"
+          className="fixed inset-0 z-[110] backdrop-blur-sm lg:hidden flex flex-col overflow-y-auto overscroll-contain safe-top safe-bottom"
           style={{ background: light ? hexToRgba(brand.ui.bg, 0.97) : "rgba(0,0,0,0.94)" }}
         >
           <div className="flex items-center justify-between p-4">
@@ -176,17 +185,17 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
                 <img src={brand.logo} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
               )}
             </span>
-            <button onClick={() => setOpen(false)} className="p-2 rounded-full" style={{ color: fg }} aria-label="Close menu">
+            <button onClick={() => setOpen(false)} className="p-3 -mr-2 rounded-full" style={{ color: fg }} aria-label="Close menu">
               <X size={22} />
             </button>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center gap-2 px-7 pb-24">
+          <div className="flex-1 flex flex-col justify-center gap-2 px-7 pb-16 sm:px-12 max-w-xl w-full mx-auto">
             {brand.nav.map((item) => (
               <button
                 key={item.label}
                 onClick={() => go(item.target)}
-                className={`text-left text-3xl py-2.5 border-b ${displayClass(brand.ui) || "font-medium tracking-[-0.02em]"}`}
+                className={`text-left text-3xl py-3 border-b ${displayClass(brand.ui) || "font-medium tracking-[-0.02em]"}`}
                 style={{ color: fg, borderColor: pillLine }}
               >
                 {item.label}

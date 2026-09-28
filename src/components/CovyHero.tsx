@@ -83,7 +83,7 @@ export default function CovyHero({ brand, cursor, ctaTarget }: CovyHeroProps) {
           </div>
 
           <p
-            className="hero-anim hero-fade mt-10 text-xs max-w-xs leading-relaxed"
+            className="hero-anim hero-fade mt-10 text-xs max-w-xs leading-relaxed [@media(hover:none)]:hidden"
             style={{ color: ui.textFaint, animationDelay: "0.75s" }}
           >
             {brand.hero.prompt}

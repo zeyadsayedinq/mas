@@ -1,6 +1,7 @@
-import CupArt from "./CupArt";
+import FoodBevArt from "./FoodBevArt";
 import { OpenNowBadge } from "./Branches";
 import { BRANCHES } from "../branches";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import type { Brand } from "../brands";
 
 interface AromaHeroProps {
@@ -8,13 +9,17 @@ interface AromaHeroProps {
 }
 
 /**
- * Aroma is the daytime brand, so its hero runs light and skips the cursor
- * spotlight that MAS and COVY use. Same type scale, same entrance animations,
- * opposite surface. The room is already lit here, which is the point.
+ * Aroma is the daytime brand, so its hero runs on plain white. The logo is
+ * drawn in two greens and a grey, and it only reads properly on a clean
+ * ground, so nothing tinted sits behind it. The picture underneath is what
+ * the kitchen and the bar actually serve: coffee, feteer, grill and juice.
+ *
+ * Laid out as a column (logo, picture, actions) rather than absolutely placed
+ * pieces, so it holds together from a phone to an iPad in either orientation.
  */
 export default function AromaHero({ brand }: AromaHeroProps) {
   const ui = brand.ui;
-  const day = brand.cupDay ?? brand.cupLit;
+  const compact = useMediaQuery("(max-width: 1023px)");
 
   const go = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -22,78 +27,61 @@ export default function AromaHero({ brand }: AromaHeroProps) {
   return (
     <section
       id="top"
-      className="relative w-full overflow-hidden h-screen"
-      style={{ height: "100dvh", background: ui.bg }}
+      className="relative w-full overflow-hidden"
+      style={{ height: "100dvh", minHeight: 620, background: "#FFFFFF" }}
     >
-      <div className="absolute inset-0 z-10 hero-zoom">
-        <CupArt variant="lit" palette={day} idPrefix="aroma-day" className="absolute inset-0 w-full h-full" />
-      </div>
-
-      {/* Softens the top of the scene so the nav and headline stay readable. */}
+      {/* the faintest green lift under the food, so it does not float on nothing */}
       <div
-        className="absolute inset-x-0 top-0 h-2/5 z-20 pointer-events-none"
-        style={{ background: `linear-gradient(to bottom, ${ui.bg}, transparent)` }}
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `radial-gradient(60% 42% at 50% 72%, ${brand.accent}14 0%, #FFFFFF 70%)` }}
       />
 
-      <div className="absolute top-[14%] left-0 right-0 z-50 flex flex-col items-center text-center px-5 pointer-events-none">
-        {/* The supplied lockup carries the name here rather than set type, so
-            the hero shows the brand exactly as it is drawn. The h1 keeps the
-            name for screen readers and for the document outline. */}
+      <div className="relative z-10 h-full flex flex-col items-center px-5 sm:px-10 md:px-14 pt-20 sm:pt-24 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-[max(2.25rem,env(safe-area-inset-bottom))]">
         <h1 className="sr-only">{brand.name}</h1>
         <img
           src={brand.logo}
           alt={brand.name}
-          className="hero-anim hero-reveal h-24 sm:h-32 md:h-36 w-auto max-w-[80vw]"
+          className="hero-anim hero-reveal shrink-0 h-24 sm:h-28 md:h-32 w-auto max-w-[80vw]"
           style={{ animationDelay: "0.25s" }}
         />
 
         <div
-          className="hero-anim hero-fade mt-6 flex flex-wrap items-center justify-center gap-2"
-          style={{ animationDelay: "0.6s" }}
+          className="hero-anim hero-fade flex-1 min-h-0 w-full max-w-[1280px] mt-2 flex items-center justify-center"
+          style={{ animationDelay: "0.5s" }}
         >
-          {["Coffee & drinks", "Feteer & Pizza", "Grill", "Shisha", "Work desks"].map((t) => (
-            <span
-              key={t}
-              className="text-[11px] sm:text-xs font-medium px-3.5 py-1.5 rounded-full backdrop-blur-sm"
-              style={{ background: "rgba(255,255,255,0.72)", color: ui.text, border: `1px solid ${ui.line}` }}
+          <FoodBevArt accent={brand.accent} compact={compact} className="w-full h-auto max-h-full" />
+        </div>
+
+        <div
+          className="hero-anim hero-fade shrink-0 w-full max-w-6xl mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-8"
+          style={{ animationDelay: "0.8s" }}
+        >
+          <div className="hidden sm:block max-w-[270px]">
+            <p className="text-sm leading-relaxed" style={{ color: ui.onHeroMuted }}>
+              {brand.hero.aside}
+            </p>
+            <div className="mt-3">
+              <OpenNowBadge branch={BRANCHES[0]} brand={brand} />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3">
+            <button
+              onClick={() => go("reserve")}
+              className="flex-1 sm:flex-none text-sm font-medium px-7 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
+              style={{ background: brand.accent, color: brand.accentText }}
             >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div
-        className="hero-anim hero-fade hidden sm:block absolute bottom-14 left-10 md:left-14 max-w-[270px] z-50"
-        style={{ animationDelay: "0.7s" }}
-      >
-        <p className="text-sm leading-relaxed" style={{ color: ui.onHeroMuted }}>
-          {brand.hero.aside}
-        </p>
-        <div className="mt-4">
-          <OpenNowBadge branch={BRANCHES[0]} brand={brand} />
-        </div>
-      </div>
-
-      <div
-        className="hero-anim hero-fade absolute bottom-10 sm:bottom-24 left-5 right-5 sm:left-auto sm:right-10 md:right-14 sm:max-w-none flex flex-col items-start sm:items-end gap-4 z-50"
-        style={{ animationDelay: "0.85s" }}
-      >
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => go("reserve")}
-            className="text-sm font-medium px-7 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
-            style={{ background: brand.accent, color: brand.accentText }}
-          >
-            Reserve a table
-          </button>
-          <button
-            onClick={() => go("menu")}
-            className="text-sm font-medium px-7 py-3 rounded-full border transition-colors"
-            style={{ borderColor: ui.line, color: ui.text, background: "rgba(255,255,255,0.6)" }}
-          >
-            {brand.hero.cta}
-          </button>
+              Reserve a table
+            </button>
+            <button
+              onClick={() => go("menu")}
+              className="flex-1 sm:flex-none text-sm font-medium px-7 py-3 rounded-full border transition-colors"
+              style={{ borderColor: `${brand.accent}88`, color: ui.text, background: "#FFFFFF" }}
+            >
+              {brand.hero.cta}
+            </button>
+          </div>
         </div>
       </div>
     </section>

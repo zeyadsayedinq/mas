@@ -7,23 +7,22 @@ interface DesksProps {
 }
 
 /**
- * A morning palette, local to this section only. Warm cream instead of the
- * site's neutral ground, amber for the glow and the small icon warmth, sage
- * for the one thing that has to read as an action (the button).
+ * A palette local to this section: white with a soft green lift, and the
+ * brand's light green for the icons and the one action (the button).
  */
 const MORNING = {
-  bg: "linear-gradient(180deg, #FFF9EE 0%, #FDF2DC 60%, #FBEBCB 100%)",
-  glow1: "radial-gradient(circle, rgba(255,196,120,0.45) 0%, rgba(255,196,120,0) 70%)",
-  glow2: "radial-gradient(circle, rgba(130,165,65,0.22) 0%, rgba(130,165,65,0) 70%)",
-  text: "#3A2E1F",
-  textMuted: "rgba(58,46,31,0.72)",
-  cardBg: "rgba(255,255,255,0.55)",
-  cardBorder: "rgba(201,138,52,0.22)",
-  cardShadow: "0 12px 34px -16px rgba(201,138,52,0.32)",
-  amber: "#B9812E",
-  amberSoft: "rgba(201,138,52,0.14)",
-  sage: "#4F6F52",
-  sageHover: "#3f5a42",
+  bg: "linear-gradient(180deg, #FFFFFF 0%, #FBFCF8 60%, #F6F9EF 100%)",
+  glow1: "radial-gradient(circle, rgba(130,165,65,0.10) 0%, rgba(130,165,65,0) 70%)",
+  glow2: "radial-gradient(circle, rgba(130,165,65,0.14) 0%, rgba(130,165,65,0) 70%)",
+  text: "#23301A",
+  textMuted: "rgba(35,48,26,0.70)",
+  cardBg: "#FFFFFF",
+  cardBorder: "rgba(35,48,26,0.10)",
+  cardShadow: "0 12px 34px -18px rgba(35,48,26,0.22)",
+  amber: "#82A541",
+  amberSoft: "rgba(130,165,65,0.14)",
+  sage: "#82A541",
+  sageHover: "#6c8a35",
 };
 
 const FEATURES = [
@@ -38,8 +37,7 @@ const FEATURES = [
 /**
  * Students, freelancers and remote workers are a different customer with a
  * different reason to come, so this gets its own section rather than a menu
- * line. It runs its own bright, sunlit-morning mood rather than the rest of
- * the page's palette, since it is selling a feeling as much as a desk.
+ * line. It stays on the same white ground as the rest of the page.
  */
 export default function Desks(_props: DesksProps) {
   return (
@@ -105,7 +103,7 @@ export default function Desks(_props: DesksProps) {
                     document.getElementById("reserve")?.scrollIntoView({ behavior: "smooth", block: "start" })
                   }
                   className="text-sm font-medium px-7 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
-                  style={{ background: MORNING.sage, color: "#FFFFFF", boxShadow: "0 10px 24px -10px rgba(79,111,82,0.5)" }}
+                  style={{ background: MORNING.sage, color: "#FFFFFF", boxShadow: "0 10px 24px -12px rgba(130,165,65,0.6)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = MORNING.sageHover)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = MORNING.sage)}
                 >

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import Reveal from "./Reveal";
 import { MENU, ALL_ITEMS, type MenuItem } from "../menu";
@@ -40,6 +40,20 @@ export default function MenuExplorer({ brand }: MenuExplorerProps) {
     const next = MENU.find((s) => s.key === key);
     if (next) setCategoryKey(next.categories[0].key);
   };
+
+  // Keep the active tab in view when it changes, so swiping the rail and then
+  // picking a menu never leaves the chosen chip half off screen.
+  const sectionRail = useRef<HTMLDivElement>(null);
+  const categoryRail = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    for (const rail of [sectionRail.current, categoryRail.current]) {
+      const on = rail?.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!rail || !on) continue;
+      const offset = on.getBoundingClientRect().left - rail.getBoundingClientRect().left + rail.scrollLeft;
+      const to = offset - (rail.clientWidth - on.offsetWidth) / 2;
+      rail.scrollTo({ left: Math.max(0, to), behavior: "smooth" });
+    }
+  }, [sectionKey, categoryKey]);
 
   const items: (MenuItem | SearchHit)[] = results ?? category.items;
   const showCategoryRow = !results && section.categories.length > 1;
@@ -95,15 +109,17 @@ export default function MenuExplorer({ brand }: MenuExplorerProps) {
         </div>
 
         <Reveal delay={0.1}>
-          <div className="flex flex-wrap gap-2.5 mb-4">
+          <div ref={sectionRail} role="tablist" aria-label="Menus" className="rail rail-wrap mb-4">
             {MENU.map((s) => (
               <button
                 key={s.key}
+                role="tab"
+                aria-selected={s.key === sectionKey && !results}
                 onClick={() => {
                   setQuery("");
                   pickSection(s.key);
                 }}
-                className="text-sm font-medium px-5 py-2.5 rounded-full transition-all"
+                className="text-sm font-medium px-5 py-2.5 rounded-full transition-all whitespace-nowrap"
                 style={
                   s.key === sectionKey && !results
                     ? { background: brand.accent, color: brand.accentText }
@@ -116,12 +132,14 @@ export default function MenuExplorer({ brand }: MenuExplorerProps) {
           </div>
 
           {showCategoryRow && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div ref={categoryRail} role="tablist" aria-label="Categories" className="rail rail-wrap mb-4">
               {section.categories.map((cat) => (
                 <button
                   key={cat.key}
+                  role="tab"
+                  aria-selected={cat.key === category.key}
                   onClick={() => setCategoryKey(cat.key)}
-                  className="text-xs font-medium px-3.5 py-2 rounded-full transition-all"
+                  className="text-xs font-medium px-3.5 py-2.5 rounded-full transition-all whitespace-nowrap"
                   style={
                     cat.key === category.key
                       ? { background: `${brand.accent}1f`, color: brand.accent, border: `1px solid ${brand.accent}55` }
@@ -153,7 +171,7 @@ export default function MenuExplorer({ brand }: MenuExplorerProps) {
           >
             {items.map((item, i) => (
               <Reveal key={`${item.name}-${i}`} delay={Math.min(0.3, i * 0.03)}>
-                <div className="h-full px-6 py-6 flex flex-col gap-2" style={{ background: ui.bgSoft }}>
+                <div className="h-full px-5 sm:px-6 py-5 sm:py-6 flex flex-col gap-2" style={{ background: ui.bgSoft }}>
                   <p className="text-[15px] font-medium leading-snug" style={{ color: ui.text }}>
                     {item.name}
                   </p>

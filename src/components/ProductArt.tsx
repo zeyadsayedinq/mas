@@ -31,7 +31,7 @@ export function CoffeeCup({ accent, className }: ArtProps) {
       </defs>
 
       {/* steam */}
-      <g stroke="#ffffff" strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.5" filter="url(#pa-steam)">
+      <g stroke="#B7C39B" strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.55" filter="url(#pa-steam)">
         <path d="M168,132 C152,96 186,76 170,42" />
         <path d="M200,134 C216,98 184,78 200,38" />
         <path d="M232,132 C216,98 248,80 232,48" />
@@ -150,7 +150,7 @@ export function Ribeye({ accent, className }: ArtProps) {
       </defs>
 
       {/* steam off the rested steak */}
-      <g stroke="#ffffff" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.32" filter="url(#pa-s-steam)">
+      <g stroke="#B7C39B" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.5" filter="url(#pa-s-steam)">
         <path d="M156,150 C142,116 172,98 158,68" />
         <path d="M204,146 C218,112 190,94 204,62" />
         <path d="M250,152 C236,118 264,102 250,74" />

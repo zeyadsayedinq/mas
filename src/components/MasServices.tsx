@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import Reveal from "./Reveal";
 import { SERVICES, type Brand, type Service } from "../brands";
@@ -24,6 +24,16 @@ export default function MasServices({ brand }: { brand: Brand }) {
   const [active, setActive] = useState(0);
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const service = SERVICES[active];
+
+  // On a phone the tab row scrolls sideways, so bring the chosen tab into view.
+  useEffect(() => {
+    // Scroll the row itself, never the page, so this cannot yank the viewport.
+    const tab = tabsRef.current[active];
+    const row = tab?.parentElement;
+    if (!tab || !row) return;
+    const offset = tab.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft;
+    row.scrollTo({ left: Math.max(0, offset - (row.clientWidth - tab.offsetWidth) / 2), behavior: "smooth" });
+  }, [active]);
 
   const ground = brand.dark ?? "#1C1311";
   const accent = brand.accentOnDark ?? brand.accent;
@@ -75,7 +85,7 @@ export default function MasServices({ brand }: { brand: Brand }) {
           role="tablist"
           aria-label="What MAS Egypt does"
           onKeyDown={onKeyDown}
-          className="flex overflow-x-auto no-scrollbar border-b"
+          className="flex overflow-x-auto no-scrollbar border-b overscroll-x-contain snap-x"
           style={{ borderColor: line }}
         >
           {SERVICES.map((s, i) => {
@@ -90,7 +100,7 @@ export default function MasServices({ brand }: { brand: Brand }) {
                 aria-controls={`svc-panel-${s.key}`}
                 tabIndex={on ? 0 : -1}
                 onClick={() => setActive(i)}
-                className="relative shrink-0 px-5 sm:px-7 first:pl-0 pb-4 pt-1 text-left"
+                className="relative shrink-0 snap-start px-5 sm:px-7 first:pl-0 pb-4 pt-1 text-left"
               >
                 <span
                   className="block text-base sm:text-lg font-semibold tracking-[-0.02em] whitespace-nowrap transition-colors"

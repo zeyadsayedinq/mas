@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { X, ArrowRight, MousePointerClick } from "lucide-react";
 import type { MenuItem } from "../menu";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 export interface ShowcaseFeature {
   label: string;
@@ -73,6 +74,8 @@ export default function ScrollShowcase({
   const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(false);
+  const isPhone = useMediaQuery("(max-width: 639px)");
+  const isTouch = useMediaQuery("(hover: none)");
 
   useEffect(() => {
     let frame = 0;
@@ -121,7 +124,7 @@ export default function ScrollShowcase({
   };
 
   return (
-    <div ref={trackRef} style={{ height: `${track * 100}vh`, background: bg }}>
+    <div ref={trackRef} style={{ height: `${(isPhone ? track * 0.8 : track) * 100}vh`, background: bg }}>
       <div className="sticky top-0 h-screen overflow-hidden" style={{ height: "100dvh" }}>
         <div className="relative w-full h-full flex items-center justify-center">
           <div
@@ -146,7 +149,7 @@ export default function ScrollShowcase({
             aria-label={`${headingItalic} ${heading}. Show menu items`}
             className="relative rounded-full transition-transform duration-300 hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 w-[76vw] max-w-[500px] sm:w-[50vw] md:w-[42vw]"
             style={{
-              transform: `translateY(${lift - (open ? 90 : 26)}px) scale(${scale * (open ? 0.72 : 1)})`,
+              transform: `translateY(${lift - (open ? 90 : isPhone ? 60 : 26)}px) scale(${scale * (open ? 0.72 : 1)})`,
               transition: "transform 420ms cubic-bezier(0.16,1,0.3,1)",
             }}
           >
@@ -157,19 +160,20 @@ export default function ScrollShowcase({
           <div
             className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] pointer-events-none"
             style={{
-              bottom: "10%",
+              bottom: isPhone ? "calc(env(safe-area-inset-bottom) + 6%)" : "10%",
               color: textMuted,
               opacity: open ? 0 : Math.min(1, Math.max(0, (progress - 0.32) / 0.12)),
               transition: "opacity 250ms ease",
             }}
           >
             <MousePointerClick size={14} />
-            Click to see the menu
+            {isTouch ? "Tap to see the menu" : "Click to see the menu"}
           </div>
 
           {features.map((f, i) => {
             const start = 0.3 + i * 0.13;
             const t = Math.min(1, Math.max(0, (progress - start) / 0.13));
+            if (isPhone) return null;
             return (
               <div
                 key={f.label}
@@ -196,11 +200,48 @@ export default function ScrollShowcase({
             );
           })}
 
+          {/* On a phone the four corners are too tight to hold a pill each, so the
+              features stack as a two by two grid under the product instead. */}
+          {isPhone && (
+            <div
+              className="absolute left-4 right-4 grid grid-cols-2 gap-2.5 pointer-events-none"
+              style={{ bottom: "calc(env(safe-area-inset-bottom) + 15%)" }}
+            >
+              {features.map((f, i) => {
+                const start = 0.3 + i * 0.13;
+                const t = Math.min(1, Math.max(0, (progress - start) / 0.13));
+                return (
+                  <div
+                    key={f.label}
+                    className="flex items-center gap-2.5 rounded-xl p-2 backdrop-blur-sm"
+                    style={{
+                      background: pillBg,
+                      border: `1px solid ${line}`,
+                      opacity: t * (open ? 0.18 : 1),
+                      transform: `translateY(${(1 - t) * 14}px)`,
+                      transition: "opacity 250ms ease",
+                    }}
+                  >
+                    <span
+                      className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                      style={{ background: accent, color: accentText }}
+                    >
+                      {f.icon}
+                    </span>
+                    <span className="text-[11px] leading-snug font-medium" style={{ color: textMuted }}>
+                      {f.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* the menu card. Positioning lives on the wrapper so the open/close
               transform below never fights the centring translate. */}
           <div
             className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 bottom-6 sm:bottom-10 sm:w-[min(620px,90vw)]"
-            style={{ pointerEvents: open ? "auto" : "none" }}
+            style={{ pointerEvents: open ? "auto" : "none", marginBottom: "env(safe-area-inset-bottom)" }}
           >
           <div
             className="rounded-2xl p-5 sm:p-7 shadow-2xl"
@@ -219,7 +260,7 @@ export default function ScrollShowcase({
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
-                className="shrink-0 p-1.5 rounded-full transition-colors"
+                className="shrink-0 p-2.5 -m-1 rounded-full transition-colors"
                 style={{ color: textMuted }}
               >
                 <X size={18} />

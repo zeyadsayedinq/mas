@@ -68,8 +68,16 @@
 .scroll-reveal { opacity:0; transform:translateY(22px); transition:opacity .9s cubic-bezier(0.16,1,0.3,1), transform .9s cubic-bezier(0.16,1,0.3,1); }
 .scroll-reveal.is-in { opacity:1; transform:translateY(0); }
 
-html { scroll-behavior:smooth; }
-body { background:#FFFFFF; }
+html {
+  scroll-behavior:smooth;
+  /* The fixed nav is about 64px tall, so anchored sections stop below it. */
+  scroll-padding-top:64px;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+}
+body { background:#FFFFFF; overflow-x:hidden; overflow-x:clip; }
+img, svg, video { max-width:100%; }
 
 @media (prefers-reduced-motion: reduce){
   .hero-anim,.hero-zoom{ animation:none; opacity:1; }
@@ -83,3 +91,57 @@ body { background:#FFFFFF; }
 /* The house rail scrolls on a phone without showing a bar. */
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+
+/* ---------------------------------------------------------------------------
+   Phone and tablet
+--------------------------------------------------------------------------- */
+
+/* Taps, not hovers: no double-tap zoom delay on anything clickable. */
+button, a, [role="tab"], input, select, textarea { touch-action:manipulation; }
+
+/* A horizontal rail of tabs or chips. Swipes with momentum, snaps to each
+   chip, and fades at the edges so it is clear there is more to scroll. */
+.rail {
+  display:flex; flex-wrap:nowrap; gap:.625rem;
+  overflow-x:auto; overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  scroll-padding-inline:1.25rem;
+  margin-inline:-1.25rem; padding-inline:1.25rem;
+  scrollbar-width:none;
+}
+.rail::-webkit-scrollbar { display:none; }
+.rail > * { flex:0 0 auto; scroll-snap-align:start; }
+@media (min-width:640px) {
+  .rail { margin-inline:-2.5rem; padding-inline:2.5rem; scroll-padding-inline:2.5rem; }
+}
+@media (min-width:768px) {
+  /* Room for everything on a wide screen, so let it wrap again. */
+  .rail-wrap { flex-wrap:wrap; overflow:visible; margin-inline:0; padding-inline:0; }
+}
+
+/* iOS zooms the page when a field under 16px takes focus. */
+@media (max-width:1024px) {
+  input, select, textarea { font-size:16px !important; }
+}
+
+/* Finger-sized targets on touch screens. */
+@media (pointer:coarse) {
+  button, [role="tab"], a.btn { min-height:44px; }
+  .no-touch-min { min-height:0 !important; }
+}
+
+/* Notches and the home bar. */
+.safe-top { padding-top:env(safe-area-inset-top); }
+.safe-bottom { padding-bottom:env(safe-area-inset-bottom); }
+.safe-x { padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+
+/* Long words and Arabic strings never push the page wider than the screen. */
+h1, h2, h3, p, li, span { overflow-wrap:break-word; }
+
+/* Hover lift only where there is a hover. Touch screens keep the pressed state. */
+@media (hover:none) {
+  .hover\:scale-\[1\.02\]:hover, .hover\:scale-\[1\.03\]:hover, .hover\:scale-110:hover, .hover\:-translate-y-0\.5:hover { transform:none; }
+}

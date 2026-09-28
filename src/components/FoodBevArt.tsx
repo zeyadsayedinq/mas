@@ -14,14 +14,22 @@ interface FoodBevArtProps {
   className?: string;
 }
 
-/** Everything stands on this line. */
-const FLOOR = 470;
+export type PieceKind = "latte" | "cup" | "feteer" | "steak" | "juice";
 
-function Defs({ accent }: { accent: string }) {
+/** Everything stands on this line. */
+export const FLOOR = 470;
+
+/** Ground colour for the drop shadows and the glass edge, per surface. */
+const SHADOW = { day: "#23301A", night: "#000000" };
+
+export function Defs({ accent }: { accent: string }) {
   return (
     <defs>
       <filter id="fb-blur" x="-20%" y="-50%" width="140%" height="200%">
         <feGaussianBlur stdDeviation="9" />
+      </filter>
+      <filter id="fb-blur-s" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" />
       </filter>
       <linearGradient id="fb-cup" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0%" stopColor="#ffffff" />
@@ -62,22 +70,23 @@ function Defs({ accent }: { accent: string }) {
       </clipPath>
       <linearGradient id="fb-straw" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0%" stopColor={accent} />
-        <stop offset="100%" stopColor="#6c8a35" />
+        <stop offset="100%" stopColor={accent} />
       </linearGradient>
     </defs>
   );
 }
 
 const shadow = (rx: number) => (
-  <ellipse cx="0" cy="2" rx={rx} ry="10" fill="#23301A" opacity="0.16" filter="url(#fb-blur)" />
+  <ellipse cx="0" cy="2" rx={rx} ry="10" fill="currentColor" opacity="0.16" filter="url(#fb-blur)" />
 );
 
 /** Tall iced latte: milk over espresso, ice, green straw. Origin is the base. */
-function Latte({ x }: { x: number }) {
+export function Latte({ x, night = false }: { x: number; night?: boolean }) {
+  const edge = night ? "#8B93A8" : "#CFD8C0";
   return (
     <g transform={`translate(${x},${FLOOR})`}>
       {shadow(64)}
-      <path d="M-48,-250 L-37,-14 Q0,-2 37,-14 L48,-250 Z" fill="#FFFFFF" fillOpacity="0.7" />
+      <path d="M-48,-250 L-37,-14 Q0,-2 37,-14 L48,-250 Z" fill="#FFFFFF" fillOpacity={night ? 0.14 : 0.7} />
       <g clipPath="url(#fb-latte-clip)">
         <rect x="-60" y="-214" width="120" height="90" fill="url(#fb-milk)" />
         <path d="M-60,-142 C-34,-124 -12,-158 18,-140 C38,-128 50,-144 60,-140 L60,4 L-60,4 Z" fill="url(#fb-coffee)" />
@@ -89,18 +98,25 @@ function Latte({ x }: { x: number }) {
         </g>
         <rect x="-40" y="-244" width="8" height="200" rx="4" fill="#ffffff" opacity="0.55" />
       </g>
-      <path d="M-48,-250 L-37,-14 Q0,-2 37,-14 L48,-250" fill="none" stroke="#CFD8C0" strokeWidth="2.5" />
-      <ellipse cx="0" cy="-250" rx="48" ry="7" fill="none" stroke="#CFD8C0" strokeWidth="2.5" />
+      <path d="M-48,-250 L-37,-14 Q0,-2 37,-14 L48,-250" fill="none" stroke={edge} strokeWidth="2.5" />
+      <ellipse cx="0" cy="-250" rx="48" ry="7" fill="none" stroke={edge} strokeWidth="2.5" />
       <path d="M16,-312 L-4,-150" stroke="url(#fb-straw)" strokeWidth="10" strokeLinecap="round" fill="none" />
     </g>
   );
 }
 
 /** Coffee on a saucer. */
-function Cup({ x, scale, accent }: { x: number; scale: number; accent: string }) {
+export function Cup({ x, scale, accent, steam = false }: { x: number; scale: number; accent: string; steam?: boolean }) {
   return (
     <g transform={`translate(${x},${FLOOR}) scale(${scale}) translate(-200,-346)`}>
-      <ellipse cx="200" cy="344" rx="132" ry="20" fill="#23301A" opacity="0.16" filter="url(#fb-blur)" />
+      <ellipse cx="200" cy="344" rx="132" ry="20" fill="currentColor" opacity="0.16" filter="url(#fb-blur)" />
+      {steam && (
+        <g fill="none" stroke="#B7C39B" strokeWidth="8" strokeLinecap="round" filter="url(#fb-blur-s)">
+          <path className="fb-steam" d="M172,150 C158,124 184,110 170,84" />
+          <path className="fb-steam" style={{ animationDelay: "1.2s" }} d="M204,150 C218,122 192,108 206,80" />
+          <path className="fb-steam" style={{ animationDelay: "2.3s" }} d="M234,150 C222,126 246,112 234,90" />
+        </g>
+      )}
       <ellipse cx="200" cy="322" rx="126" ry="24" fill="#E6EBDD" />
       <ellipse cx="200" cy="317" rx="112" ry="19" fill="#FFFFFF" />
       <ellipse cx="200" cy="317" rx="112" ry="19" fill="none" stroke={accent} strokeWidth="2" opacity="0.55" />
@@ -116,10 +132,10 @@ function Cup({ x, scale, accent }: { x: number; scale: number; accent: string })
 }
 
 /** Layered feteer with a honey drizzle. The centrepiece. */
-function Feteer({ x, scale, accent }: { x: number; scale: number; accent: string }) {
+export function Feteer({ x, scale, accent }: { x: number; scale: number; accent: string }) {
   return (
     <g transform={`translate(${x},${FLOOR}) scale(${scale}) translate(-200,-308)`}>
-      <ellipse cx="200" cy="304" rx="150" ry="20" fill="#23301A" opacity="0.16" filter="url(#fb-blur)" />
+      <ellipse cx="200" cy="304" rx="150" ry="20" fill="currentColor" opacity="0.16" filter="url(#fb-blur)" />
       <ellipse cx="200" cy="268" rx="158" ry="44" fill="#E9EEE0" />
       <ellipse cx="200" cy="264" rx="158" ry="44" fill="#FFFFFF" />
       <ellipse cx="200" cy="264" rx="140" ry="37" fill="none" stroke={accent} strokeWidth="2" opacity="0.55" />
@@ -145,10 +161,10 @@ function Feteer({ x, scale, accent }: { x: number; scale: number; accent: string
 }
 
 /** Grilled rib eye on a board. */
-function Steak({ x, scale, accent }: { x: number; scale: number; accent: string }) {
+export function Steak({ x, scale, accent }: { x: number; scale: number; accent: string }) {
   return (
     <g transform={`translate(${x},${FLOOR}) scale(${scale}) translate(-200,-316)`}>
-      <ellipse cx="200" cy="312" rx="150" ry="20" fill="#23301A" opacity="0.18" filter="url(#fb-blur)" />
+      <ellipse cx="200" cy="312" rx="150" ry="20" fill="currentColor" opacity="0.18" filter="url(#fb-blur)" />
       <ellipse cx="200" cy="286" rx="150" ry="30" fill="#6B4523" />
       <ellipse cx="200" cy="280" rx="150" ry="30" fill="url(#fb-s-board)" />
       <ellipse cx="200" cy="280" rx="132" ry="24" fill="none" stroke="#C99A63" strokeWidth="2" opacity="0.35" />
@@ -180,7 +196,7 @@ function Steak({ x, scale, accent }: { x: number; scale: number; accent: string 
 }
 
 /** Fresh orange juice with an orange slice on the rim. */
-function Juice({ x }: { x: number }) {
+export function Juice({ x }: { x: number }) {
   return (
     <g transform={`translate(${x},${FLOOR})`}>
       {shadow(54)}
@@ -220,25 +236,93 @@ export default function FoodBevArt({ accent, compact = false, className }: FoodB
       viewBox={compact ? "0 110 600 390" : "0 110 1330 390"}
       preserveAspectRatio="xMidYMid meet"
       className={className}
+      style={{ color: SHADOW.day }}
       role="img"
       aria-label="Iced latte, coffee, feteer, grilled steak and fresh orange juice"
     >
       <Defs accent={accent} />
       {compact ? (
         <>
-          <Latte x={92} />
-          <Feteer x={292} scale={1.1} accent={accent} />
-          <Cup x={470} scale={0.7} accent={accent} />
+          <g className="fb-float"><Latte x={92} /></g>
+          <g className="fb-float" style={{ animationDelay: "-2s" }}><Feteer x={292} scale={1.1} accent={accent} /></g>
+          <g className="fb-float" style={{ animationDelay: "-4s" }}><Cup x={470} scale={0.7} accent={accent} steam /></g>
         </>
       ) : (
         <>
-          <Latte x={140} />
-          <Cup x={385} scale={0.8} accent={accent} />
-          <Feteer x={690} scale={1.15} accent={accent} />
-          <Steak x={1010} scale={0.9} accent={accent} />
-          <Juice x={1215} />
+          <g className="fb-float"><Latte x={140} /></g>
+          <g className="fb-float" style={{ animationDelay: "-1.5s" }}><Cup x={385} scale={0.8} accent={accent} steam /></g>
+          <g className="fb-float" style={{ animationDelay: "-3s" }}><Feteer x={690} scale={1.15} accent={accent} /></g>
+          <g className="fb-float" style={{ animationDelay: "-4.5s" }}><Steak x={1010} scale={0.9} accent={accent} /></g>
+          <g className="fb-float" style={{ animationDelay: "-2.2s" }}><Juice x={1215} /></g>
         </>
       )}
+    </svg>
+  );
+}
+
+/**
+ * One dish or drink on its own, for cards. Same drawing as the spread, framed
+ * tightly so it fills a square-ish tile.
+ */
+export function FoodBevPiece({
+  kind,
+  accent,
+  night = false,
+  shadow,
+  className,
+}: {
+  kind: PieceKind;
+  accent: string;
+  night?: boolean;
+  /** Overrides the shadow colour, e.g. the brand navy on a blue tile. */
+  shadow?: string;
+  className?: string;
+}) {
+  const box: Record<PieceKind, string> = {
+    latte: "-75 145 150 350",
+    cup: "30 245 340 255",
+    feteer: "0 285 400 205",
+    steak: "5 255 390 245",
+    juice: "-75 250 150 250",
+  };
+  // The cup, feteer and steak are drawn at the origin of a 400 frame, so they
+  // are placed at x=200 to sit in the middle of their boxes.
+  const x = kind === "latte" || kind === "juice" ? 0 : 200;
+  return (
+    <svg
+      viewBox={box[kind]}
+      className={className}
+      style={{ color: shadow ?? (night ? SHADOW.night : SHADOW.day) }}
+      aria-hidden="true"
+    >
+      <Defs accent={accent} />
+      {kind === "latte" && <Latte x={x} night={night} />}
+      {kind === "juice" && <Juice x={x} />}
+      {kind === "cup" && <Cup x={x} scale={1.15} accent={accent} />}
+      {kind === "feteer" && <Feteer x={x} scale={1.2} accent={accent} />}
+      {kind === "steak" && <Steak x={x} scale={1.25} accent={accent} />}
+    </svg>
+  );
+}
+
+/**
+ * The evening still life for COVY: a coffee, the grill and a tall cold drink,
+ * drawn to sit on a tile of the brand's dusty blue.
+ */
+export function NightSpread({ accent, shadow, className }: { accent: string; shadow?: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 110 640 390"
+      preserveAspectRatio="xMidYMid meet"
+      className={className}
+      style={{ color: shadow ?? SHADOW.night }}
+      role="img"
+      aria-label="Coffee, a grilled steak and a tall iced drink"
+    >
+      <Defs accent={accent} />
+      <Cup x={112} scale={0.76} accent={accent} />
+      <Steak x={330} scale={1.15} accent={accent} />
+      <Latte x={568} />
     </svg>
   );
 }

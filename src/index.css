@@ -145,3 +145,10 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
 @media (hover:none) {
   .hover\:scale-\[1\.02\]:hover, .hover\:scale-\[1\.03\]:hover, .hover\:scale-110:hover, .hover\:-translate-y-0\.5:hover { transform:none; }
 }
+
+/* Gentle drift for the hero still life, each piece on its own beat. */
+@keyframes fbFloat { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-7px) } }
+@keyframes fbSteam { 0% { opacity:0; transform:translateY(6px) } 35% { opacity:.55 } 100% { opacity:0; transform:translateY(-26px) } }
+.fb-float { animation:fbFloat 6s ease-in-out infinite; }
+.fb-steam { animation:fbSteam 3.6s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) { .fb-float, .fb-steam { animation:none; } .fb-steam { opacity:.35; } }

@@ -69,10 +69,16 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
   // On a light page the logo keeps its real colours. On a dark one it is
   // reversed to white, the way a brand's own dark version would be.
-  const logoFilter = light ? undefined : "brightness(0) invert(1)";
+  // A dark page keeps the reversed logo even though its nav bar is solid.
+  const darkUi = brand.ui.scheme === "dark";
+  // A brand that ships its own reversed artwork uses it; otherwise the mark is
+  // turned white, the way a dark version would be.
+  const ownReversed = darkUi && !!brand.logoReversed;
+  const logoSrc = ownReversed ? brand.logoReversed : brand.logo;
+  const logoFilter = ownReversed || (light && !darkUi) ? undefined : "brightness(0) invert(1)";
   const fg = light ? brand.ui.text : "#ffffff";
   const fgMuted = light ? brand.ui.textMuted : "rgba(255,255,255,0.8)";
-  const pillBg = light ? "rgba(0,0,0,0.045)" : "rgba(255,255,255,0.2)";
+  const pillBg = darkUi ? "rgba(255,255,255,0.08)" : light ? "rgba(0,0,0,0.045)" : "rgba(255,255,255,0.2)";
   const pillLine = light ? brand.ui.line : "rgba(255,255,255,0.3)";
 
   useEffect(() => {
@@ -107,7 +113,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
             {brand.key === "mas" ? (
               <Lockup src={light ? brand.logo! : brand.logoReversed ?? brand.logo!} color={fg} />
             ) : (
-              <img src={brand.logo} alt={brand.name} className="h-8 sm:h-10 w-auto" style={{ filter: logoFilter }} />
+              <img src={logoSrc} alt={brand.name} className="h-8 sm:h-10 w-auto" style={{ filter: logoFilter }} />
             )}
           </Link>
 
@@ -182,7 +188,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
               {brand.key === "mas" ? (
                 <Lockup src={light ? brand.logo! : brand.logoReversed ?? brand.logo!} color={fg} small descriptor={false} />
               ) : (
-                <img src={brand.logo} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
+                <img src={logoSrc} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
               )}
             </span>
             <button onClick={() => setOpen(false)} className="p-3 -mr-2 rounded-full" style={{ color: fg }} aria-label="Close menu">

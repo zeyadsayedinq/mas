@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { Coffee, Leaf, Croissant, Flame, Clock, Users, Beef, ChefHat } from "lucide-react";
 import Nav from "../components/Nav";
 import AromaHero from "../components/AromaHero";
+import AromaHighlights from "../components/AromaHighlights";
+import StickyReserve from "../components/StickyReserve";
 import ScrollShowcase from "../components/ScrollShowcase";
 import { CoffeeCup, Feteer, Ribeye } from "../components/ProductArt";
 import About from "../components/About";
@@ -55,6 +57,7 @@ export default function AromaPage() {
       <Nav brand={brand} showParentLink onLight />
 
       <AromaHero brand={brand} />
+      <AromaHighlights brand={brand} />
 
       <About brand={brand} showPlate={false} />
 
@@ -133,6 +136,7 @@ export default function AromaPage() {
       <InstagramGrid brand={brand} />
       <Contact brand={brand} defaultSubject={brand.name} />
       <Footer brand={brand} />
+      <StickyReserve brand={brand} />
     </div>
   );
 }

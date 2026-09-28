@@ -11,7 +11,8 @@ export default function Footer({ brand }: FooterProps) {
   const isParent = brand.key === "mas";
   const ui = brand.ui;
   const light = ui.scheme === "light";
-  const logoFilter = light ? undefined : "brightness(0) invert(1)";
+  const ownReversed = !light && !!brand.logoReversed;
+  const logoFilter = light || ownReversed ? undefined : "brightness(0) invert(1)";
 
   return (
     <footer
@@ -52,10 +53,10 @@ export default function Footer({ brand }: FooterProps) {
               </span>
             ) : (
               <img
-                src={brand.logo}
+                src={ownReversed ? brand.logoReversed : brand.logo}
                 alt={brand.name}
                 className="h-9 w-auto"
-                style={{ filter: logoFilter, opacity: light ? 1 : 0.85 }}
+                style={{ filter: logoFilter, opacity: light || ownReversed ? 1 : 0.85 }}
               />
             )}
             <p className="mt-4 text-sm" style={{ color: ui.textFaint }}>

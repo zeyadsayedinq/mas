@@ -6,8 +6,6 @@ interface CovyWorkProps {
   brand: Brand;
 }
 
-const GREIGE = "#DCD4CF";
-
 const FEATURES = [
   { icon: Wifi, title: "Wifi that holds", body: "Fibre throughout, steady enough for a call at midnight." },
   { icon: Plug, title: "Power at every seat", body: "Sockets built into the tables, not just the counter." },
@@ -76,11 +74,11 @@ export default function CovyWork({ brand }: CovyWorkProps) {
                 <div
                   key={f.title}
                   className="snap-start shrink-0 w-[240px] sm:w-[260px] rounded-2xl p-6"
-                  style={{ background: ui.bgAlt, border: `1px solid ${GREIGE}` }}
+                  style={{ background: ui.bgSoft, border: `1px solid ${ui.line}` }}
                 >
                   <span
                     className="inline-flex items-center justify-center h-11 w-11 rounded-full mb-5"
-                    style={{ background: `${brand.accent}15`, color: brand.accent }}
+                    style={{ background: `${brand.accent}22`, color: brand.accent }}
                   >
                     <f.icon size={19} />
                   </span>

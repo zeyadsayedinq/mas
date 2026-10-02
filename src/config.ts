@@ -25,6 +25,68 @@ export const CONTACT_DETAILS = {
   address: "Cairo, Egypt",
 };
 
+/* ---------------------------------------------------------------------------
+   LAUNCH SAFETY
+
+   Anything not yet confirmed by MAS is kept off the live site, so nobody is
+   shown a made-up phone number, opening hours or statistic. Replace a value,
+   then flip its flag to true and it appears.
+
+   SHOW_PLACEHOLDERS = true shows everything, placeholders included, which is
+   useful for reviewing layout. Keep it false for anything public.
+--------------------------------------------------------------------------- */
+export const SHOW_PLACEHOLDERS = false;
+
+export const CONFIRMED = {
+  /** Group email and phone above. */
+  email: false,
+  phone: false,
+  /** GROUP_STATS in brands.ts (2018 / 04 / 140 / 18h). */
+  groupStats: false,
+  /** CASE_STUDIES in brands.ts. */
+  caseStudies: false,
+};
+
+/** True when a value may be shown on the site. */
+export const live = (confirmed: boolean) => SHOW_PLACEHOLDERS || confirmed;
+
+/**
+ * The public address of the site, e.g. "https://masegypt.com", used for share
+ * previews and search. Netlify and Vercel builds fill it in automatically;
+ * set it here if you host somewhere else.
+ */
+export const SITE_URL = "";
+
+/**
+ * Analytics. Paste a GA4 measurement id ("G-XXXXXXX") and/or a Meta Pixel id
+ * and the site starts reporting reservation, WhatsApp, directions and menu
+ * clicks. Empty means nothing is loaded.
+ */
+export const ANALYTICS = { ga4: "", metaPixel: "" };
+
+/** The Aroma branch the site leads with. Madinaty is the growth priority. */
+export const DEFAULT_BRANCH = "madinaty";
+
+/**
+ * COVY's venue details. Nothing here is known yet, so the visit section shows
+ * "details coming soon" until these are filled in and confirmed.
+ */
+export const COVY_VENUE = {
+  area: "",
+  areaAr: "",
+  address: "",
+  addressAr: "",
+  /** e.g. "19:00" to "02:00". */
+  open: "",
+  close: "",
+  phone: "",
+  /** International format, digits only. */
+  whatsapp: "",
+  /** What to search for on Google Maps, e.g. "COVY Lounge New Cairo". */
+  mapQuery: "",
+  confirmed: false,
+};
+
 /**
  * PLACEHOLDER SOCIAL HANDLES. Put the real ones in without the @ and the links
  * appear in the nav and footer. Leave a value empty and that link is hidden.

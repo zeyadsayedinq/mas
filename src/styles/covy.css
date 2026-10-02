@@ -1,0 +1,156 @@
+/* ---------------------------------------------------------------------------
+   COVY page: the dimmer, the evening clock, dusk, the evening card, the
+   sealed menu and the cursor sparkles. Everything is prefixed cv-, animates
+   transform and opacity only, and stands down for reduced motion.
+
+   Two custom properties drive the page, both set on [data-covy-root]:
+   --cv-light  0..1  the room dimmer in the hero (lamp, stars, warmth)
+   --cv-dusk   0..1  how far down the page you are (greige sections deepen)
+--------------------------------------------------------------------------- */
+@property --cv-light { syntax: "<number>"; inherits: true; initial-value: 0.62; }
+@property --cv-dusk { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+.cv-root { --cv-light: 0.62; --cv-dusk: 0; transition: --cv-light 0.7s cubic-bezier(.3,.7,.2,1); }
+
+/* The page warms as the lights go down: a candle-coloured glow from the
+   floor and the ceiling, kept to the edges so it never sits on text. */
+.cv-warmth {
+  position: fixed; inset: 0; pointer-events: none; z-index: 80;
+  background:
+    radial-gradient(120% 55% at 50% 118%, rgba(118,95,77,.26), rgba(118,95,77,0) 62%),
+    radial-gradient(80% 40% at 50% -14%, rgba(118,95,77,.14), rgba(118,95,77,0) 60%);
+  opacity: calc((1 - var(--cv-light)) * 1.2 - .1);
+}
+
+/* ---------- ambient stars and lamp ---------- */
+.cv-star { opacity: clamp(0, calc((var(--t) - var(--cv-light)) * 4), 1); }
+.cv-lamp { opacity: calc(.2 + var(--cv-light) * 1.05); }
+.cv-candle-glow { opacity: calc(.9 - var(--cv-light)); }
+
+/* ---------- dimmer ---------- */
+.cv-range {
+  -webkit-appearance: none; appearance: none; background: transparent;
+  width: 100%; height: 44px; cursor: pointer; margin: 0;
+  --fill: 62%;
+}
+.cv-range:focus-visible { outline: none; }
+.cv-range::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 999px;
+  background: linear-gradient(to right, #DCD4CF 0 var(--fill), rgba(220,212,207,.22) var(--fill) 100%);
+}
+.cv-range::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(220,212,207,.22); }
+.cv-range::-moz-range-progress { height: 4px; border-radius: 999px; background: #DCD4CF; }
+[dir="rtl"] .cv-range::-webkit-slider-runnable-track {
+  background: linear-gradient(to left, #DCD4CF 0 var(--fill), rgba(220,212,207,.22) var(--fill) 100%);
+}
+.cv-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; margin-top: -8px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #F4EFEB; border: 0;
+  box-shadow: 0 0 0 4px rgba(220,212,207,.18), 0 0 calc(6px + var(--cv-light) * 22px) rgba(244,239,235,.75);
+  transition: transform .2s cubic-bezier(.16,1,.3,1);
+}
+.cv-range::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%; border: 0; background: #F4EFEB;
+  box-shadow: 0 0 0 4px rgba(220,212,207,.18), 0 0 14px rgba(244,239,235,.7);
+}
+.cv-range:active::-webkit-slider-thumb { transform: scale(1.15); }
+.cv-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px #262D3F, 0 0 0 5px #DCD4CF; }
+.cv-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px #262D3F, 0 0 0 5px #DCD4CF; }
+
+/* The lamp in the hero is a switch too. */
+.cv-lampbtn { border-radius: 999px; }
+.cv-lampbtn::after {
+  content: ""; position: absolute; inset: 8% 4% 30%; border-radius: 999px;
+  border: 1px solid rgba(244,239,235,.0); transition: border-color .3s, transform .5s cubic-bezier(.16,1,.3,1);
+}
+@media (hover: hover) {
+  .cv-lampbtn:hover::after { border-color: rgba(244,239,235,.55); transform: scale(1.04); }
+}
+
+/* ---------- evening clock ---------- */
+.cv-clock {
+  position: fixed; z-index: 90;
+  inset-inline-start: max(14px, env(safe-area-inset-left));
+  bottom: calc(max(14px, env(safe-area-inset-bottom)));
+  opacity: 0; transform: translateY(10px); pointer-events: none;
+  transition: opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
+}
+.cv-clock.is-on { opacity: 1; transform: none; }
+.cv-clock-moon { transform: rotate(calc(var(--cv-dusk) * -40deg)); transition: transform .4s linear; }
+
+/* ---------- cursor sparkles ---------- */
+.cv-trail { position: fixed; inset: 0; pointer-events: none; z-index: 95; overflow: hidden; }
+.cv-trail > span { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; }
+
+/* ---------- chips ---------- */
+.cv-chip { transition: background-color .25s, color .25s, border-color .25s, transform .25s cubic-bezier(.16,1,.3,1); }
+.cv-chip:active { transform: scale(.97); }
+
+/* ---------- evening card: a flip from the cover to the written card ---------- */
+.cv-flip { perspective: 1600px; }
+.cv-flip-inner {
+  display: grid; transform-style: preserve-3d;
+  transition: transform 1.15s cubic-bezier(.2,.8,.2,1);
+}
+.cv-flip.is-open .cv-flip-inner { transform: rotateY(180deg); }
+.cv-face { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.cv-face-back { transform: rotateY(180deg); }
+.cv-card-line { opacity: 0; transform: translateY(12px); transition: opacity .7s ease, transform .9s cubic-bezier(.16,1,.3,1); }
+.cv-flip.is-open .cv-card-line { opacity: 1; transform: none; }
+.cv-burst { position: absolute; opacity: 0; transform: scale(.2); }
+.cv-flip.is-open .cv-burst { animation: cvBurst 1.6s cubic-bezier(.16,1,.3,1) both; }
+@keyframes cvBurst {
+  0% { opacity: 0; transform: translate(0,0) scale(.2) rotate(0deg); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(1) rotate(90deg); }
+}
+/* A slow shimmer across the card's foil edge. */
+.cv-foil { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
+.cv-foil::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 35%;
+  background: linear-gradient(100deg, transparent, rgba(244,239,235,.09), transparent);
+  animation: cvFoil 7s ease-in-out infinite;
+}
+@keyframes cvFoil { 0%, 55% { transform: translateX(0) skewX(-12deg); } 100% { transform: translateX(460%) skewX(-12deg); } }
+
+/* ---------- sealed menu ---------- */
+.cv-env { position: relative; aspect-ratio: 16 / 10.5; perspective: 1200px; }
+.cv-env-back, .cv-env-pocket, .cv-env-flap, .cv-letter { position: absolute; left: 0; right: 0; }
+.cv-env-back { inset: 0; border-radius: 10px; }
+.cv-env-pocket { inset: 0; border-radius: 10px; clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%); z-index: 3; }
+.cv-env-flap {
+  top: 0; height: 50%; z-index: 4; transform-origin: 50% 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transition: transform .9s cubic-bezier(.5,0,.2,1), z-index 0s .45s;
+}
+.cv-env.is-open .cv-env-flap { transform: rotateX(180deg); z-index: 1; }
+.cv-letter {
+  left: 6%; right: 6%; top: 6%; bottom: 6%; z-index: 2; border-radius: 6px;
+  transition: transform 1.1s cubic-bezier(.16,1,.3,1) .45s;
+}
+.cv-env:not(.is-open) .cv-letter { visibility: hidden; }
+.cv-env.is-open .cv-letter { transform: translateY(-52%); }
+.cv-seal {
+  position: absolute; left: 50%; top: 50%; z-index: 5; transform: translate(-50%, -50%);
+  transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .5s ease;
+}
+.cv-env.is-open .cv-seal { opacity: 0; transform: translate(-50%, -50%) scale(1.6) rotate(25deg); pointer-events: none; }
+.cv-seal-pulse { animation: cvPulse 2.8s ease-in-out infinite; }
+@keyframes cvPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.cv-caret { display: inline-block; width: 1px; height: 1em; margin-inline-start: 3px; vertical-align: -0.12em; background: currentColor; animation: cvCaret 1s steps(1) infinite; }
+@keyframes cvCaret { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-root { transition: none; }
+  .cv-flip-inner, .cv-card-line, .cv-env-flap, .cv-letter, .cv-seal, .cv-clock, .cv-clock-moon { transition: none !important; }
+  .cv-flip.is-open .cv-burst, .cv-seal-pulse, .cv-foil::before, .cv-caret { animation: none; }
+  .cv-flip.is-open .cv-burst { opacity: 0; }
+}
+
+/* Arabic has no capitals to carry tiny tracked labels, so they step up a size. */
+[dir="rtl"] .cv-root p.uppercase,
+[dir="rtl"] .cv-root span.uppercase,
+[dir="rtl"] .cv-root label.uppercase,
+[dir="rtl"] .cv-root button.uppercase,
+[dir="rtl"] .cv-root a.uppercase { font-size: 12.5px; }

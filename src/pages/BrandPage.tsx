@@ -2,31 +2,35 @@ import { useEffect, useMemo } from "react";
 import Nav from "../components/Nav";
 import CovyHero from "../components/CovyHero";
 import CovyTonight from "../components/CovyTonight";
+import CovyEvening from "../components/CovyEvening";
 import CovyWork from "../components/CovyWork";
 import CovyMenu from "../components/CovyMenu";
+import CovyVisit from "../components/CovyVisit";
 import About from "../components/About";
 import Contact from "../components/Contact";
 import CovyFooter from "../components/CovyFooter";
+import EveningClock from "../components/EveningClock";
+import SparkleTrail from "../components/SparkleTrail";
+import { useBrand } from "../localize";
+import { useLang } from "../i18n";
 import { BRANDS, type Brand } from "../brands";
 import greigeWordmark from "../assets/brand/covy-wordmark-greige.png";
+import "../styles/covy.css";
 
 interface BrandPageProps {
   brandKey: "covy";
 }
 
 /**
- * COVY, the evening room. It covers the same ground as Aroma (the room, the
- * bar, the kitchen, somewhere to work, the menu, a way to book) but is
- * dressed and ordered differently: the four colours from COVY's identity sheet
- * (navy, greige, mocha and dusty blue) alternating in bands instead of Aroma's
- * white and green, a split hero instead of a centred one,
- * a row of three cards instead of three pinned scenes, and the work section
- * ahead of the menu.
+ * COVY, the evening room. Navy and greige bands alternate down the page
+ * (the four colours of COVY's identity sheet and nothing else), and the page
+ * keeps two dials on its root: --cv-light, the dimmer in the hero, and
+ * --cv-dusk, which follows the scroll so the greige deepens a touch as the
+ * evening clock runs from 19:00 to 02:00.
  *
  * The palette lives here, so the group page and COVY's card on it keep
  * using COVY's light tokens from brands.ts.
  */
-/** The four colours on COVY's identity sheet. Nothing else is introduced. */
 const PALETTE = {
   navy: "#262D3F",
   greige: "#DCD4CF",
@@ -34,8 +38,16 @@ const PALETTE = {
   blue: "#7E98AE",
 };
 
+/**
+ * Greige that takes on up to 7% navy as the evening goes on. Text on it is
+ * set so body copy stays above 4.5:1 even at the deepest point.
+ */
+const DUSK_GREIGE = `color-mix(in srgb, ${PALETTE.greige}, ${PALETTE.navy} calc(var(--cv-dusk, 0) * 7%))`;
+
+type Tr = (en: string, ar: string) => string;
+
 /** Sections on the brand navy: greige type, dusty blue for the accents. */
-function navyBrand(base: Brand): Brand {
+function navyBrand(base: Brand, tr: Tr): Brand {
   return {
     ...base,
     logoReversed: greigeWordmark,
@@ -46,83 +58,93 @@ function navyBrand(base: Brand): Brand {
       bgAlt: "#2F3649",
       bgSoft: "#343C50",
       text: PALETTE.greige,
-      textMuted: "rgba(220,212,207,0.76)",
-      textFaint: "rgba(220,212,207,0.5)",
+      textMuted: "rgba(220,212,207,0.78)",
+      textFaint: "rgba(220,212,207,0.58)",
       line: "rgba(220,212,207,0.18)",
       onHero: PALETTE.greige,
-      onHeroMuted: "rgba(220,212,207,0.76)",
+      onHeroMuted: "rgba(220,212,207,0.78)",
     },
     accent: PALETTE.blue,
     accentHover: "#93aabd",
     accentText: PALETTE.navy,
     nav: [
-      { label: "The room", target: "top" },
-      { label: "Tonight", target: "tonight" },
-      { label: "Work here", target: "work" },
-      { label: "Menu", target: "menu" },
-      { label: "Reserve", target: "contact" },
+      { label: tr("The room", "المكان"), target: "top" },
+      { label: tr("Tonight", "الليلة"), target: "tonight" },
+      { label: tr("Private evenings", "سهرات خاصة"), target: "private" },
+      { label: tr("Menu", "المنيو"), target: "menu" },
+      { label: tr("Visit", "الزيارة"), target: "visit" },
+      { label: tr("Reserve", "احجز"), target: "contact" },
     ],
   };
 }
 
-/** Sections on the brand greige: navy type, mocha for the accents. */
+/**
+ * Sections on the brand greige: navy type, mocha for the accents. The mocha
+ * is taken a shade deeper here so small labels hold 4.5:1 on greige, dusk
+ * included.
+ */
 function greigeBrand(base: Brand): Brand {
   return {
     ...base,
     ui: {
       ...base.ui,
       scheme: "light",
-      bg: PALETTE.greige,
-      bgAlt: PALETTE.greige,
+      bg: DUSK_GREIGE,
+      bgAlt: DUSK_GREIGE,
       bgSoft: "#E9E4E1",
       text: PALETTE.navy,
-      textMuted: "rgba(38,45,63,0.74)",
-      textFaint: "rgba(38,45,63,0.52)",
+      textMuted: "rgba(38,45,63,0.8)",
+      textFaint: "rgba(38,45,63,0.64)",
       line: "rgba(38,45,63,0.16)",
       onHero: PALETTE.navy,
-      onHeroMuted: "rgba(38,45,63,0.74)",
+      onHeroMuted: "rgba(38,45,63,0.8)",
     },
-    accent: PALETTE.mocha,
-    accentHover: "#5f4c3e",
+    accent: "#65503F",
+    accentHover: "#574435",
     accentText: "#F5F1EE",
   };
 }
 
 export default function BrandPage({ brandKey }: BrandPageProps) {
-  const brand = useMemo(() => navyBrand(BRANDS[brandKey]), [brandKey]);
-  const day = useMemo(() => greigeBrand(BRANDS[brandKey]), [brandKey]);
+  const base = useBrand(brandKey);
+  const { tr } = useLang();
+  const brand = useMemo(() => navyBrand(base, tr), [base, tr]);
+  const day = useMemo(() => greigeBrand(base), [base]);
 
   useEffect(() => {
-    document.title = `${brand.name} | ${brand.descriptor}`;
     window.scrollTo(0, 0);
     // Keep the overscroll area and the browser bar on the same navy.
     const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     const prevMeta = meta?.content;
     const prevBg = document.body.style.background;
-    document.body.style.background = brand.ui.bg;
-    if (meta) meta.content = brand.ui.bg;
+    document.body.style.background = PALETTE.navy;
+    if (meta) meta.content = PALETTE.navy;
     return () => {
       document.body.style.background = prevBg;
       if (meta && prevMeta) meta.content = prevMeta;
     };
-  }, [brand]);
+  }, []);
 
   // The three facts move up into the hero, so About keeps only the story.
   const aboutBrand = useMemo<Brand>(() => ({ ...brand, about: { ...brand.about, facts: [] } }), [brand]);
 
   return (
-    <div
-      className="covy-type min-h-screen"
-      style={{ background: brand.ui.bg }}
-    >
+    <div data-covy-root className="cv-root covy-type min-h-screen" style={{ background: brand.ui.bg }}>
       <Nav brand={brand} showParentLink onLight />
-      <CovyHero brand={brand} palette={PALETTE} ctaTarget="contact" />
-      <CovyTonight brand={day} palette={PALETTE} />
-      <About brand={aboutBrand} showPlate={false} />
-      <CovyWork brand={day} />
-      <CovyMenu brand={brand} />
-      <Contact brand={day} defaultSubject={brand.name} />
+      <main>
+        <CovyHero brand={brand} palette={PALETTE} ctaTarget="contact" />
+        <CovyTonight brand={day} palette={PALETTE} />
+        <About brand={aboutBrand} showPlate={false} />
+        <CovyEvening brand={day} />
+        <CovyWork brand={brand} />
+        <CovyMenu brand={day} />
+        <CovyVisit brand={brand} />
+        <Contact brand={day} defaultSubject={BRANDS[brandKey].name} />
+      </main>
       <CovyFooter brand={brand} />
+      <div aria-hidden className="cv-warmth" />
+      <EveningClock />
+      <SparkleTrail />
     </div>
   );
 }

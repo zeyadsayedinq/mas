@@ -1,33 +1,30 @@
 import { useEffect, useState } from "react";
 import Nav from "../components/Nav";
 import MasHero from "../components/MasHero";
+import MasAudience from "../components/MasAudience";
 import About from "../components/About";
 import MasStats from "../components/MasStats";
 import MasBrands from "../components/MasBrands";
 import MasServices from "../components/MasServices";
+import MasProcess from "../components/MasProcess";
 import MasWork from "../components/MasWork";
 import MasNow from "../components/MasNow";
 import Locations from "../components/Locations";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
-import { BRANDS } from "../brands";
+import { useBrand } from "../localize";
+import "../styles/mas.css";
 
 /**
- * MAS Egypt, the group page.
+ * MAS Egypt, the group page, which is also the about page.
  *
- * This is a B2B page: it speaks to venue owners, partners and suppliers rather
- * than to diners, so it runs the group's own restrained scheme: cream and kraft
- * grounds, cocoa type, and copper spent only on the marks, the rules and the
- * active states. It carries none of
- * the cursor and canvas work the two consumer pages use; its one interactive
- * element is the What we do selector, which is there because a landlord with an
- * empty room and an owner losing money on the plate arrive wanting different
- * things and neither should have to read the other's section.
- *
- * The home page is the about page.
+ * A B2B page for venue owners, landlords, suppliers and partners rather than
+ * diners. White and grey grounds, cocoa type, sage as the one colour. Motion is
+ * kept to entrances and a single scroll-drawn line in the process section; the
+ * interactive parts are the ones that help a visitor find their engagement.
  */
 export default function Home() {
-  const brand = BRANDS.mas;
+  const brand = useBrand("mas");
 
   // The services section inverts onto the dark ground, so the fixed nav has to
   // reverse while it is under it.
@@ -58,20 +55,21 @@ export default function Home() {
   }, []);
 
   return (
-    <div
-      className="mas-type min-h-screen tracking-[-0.015em]"
-      style={{ background: brand.ui.bg }}
-    >
+    <div className="mas-type min-h-screen tracking-[-0.015em] overflow-x-clip" style={{ background: brand.ui.bg }}>
       <Nav brand={brand} onLight={navOnLight} />
-      <MasHero brand={brand} />
-      <MasStats brand={brand} />
-      <About brand={brand} showPlate={false} />
-      <MasBrands parent={brand} />
-      <MasServices brand={brand} />
-      <MasWork brand={brand} />
-      <MasNow brand={brand} />
-      <Locations brand={brand} />
-      <Contact brand={brand} />
+      <main>
+        <MasHero brand={brand} />
+        <MasAudience brand={brand} />
+        <MasStats brand={brand} />
+        <About brand={brand} showPlate={false} />
+        <MasBrands parent={brand} />
+        <MasServices brand={brand} />
+        <MasProcess brand={brand} />
+        <MasWork brand={brand} />
+        <MasNow brand={brand} />
+        <Locations brand={brand} />
+        <Contact brand={brand} />
+      </main>
       <Footer brand={brand} />
     </div>
   );

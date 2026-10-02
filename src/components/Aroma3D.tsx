@@ -1,25 +1,44 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import type { Kind } from "../three/models";
+import type { PickPoint } from "../three/Scene3D";
 
 // three.js is only fetched when one of these mounts, so the group page and
 // COVY never pay for it.
 const Scene3D = lazy(() => import("../three/Scene3D"));
+const StoryStage = lazy(() => import("../three/StoryStage"));
 
 const HERO_KINDS: Kind[] = ["iced", "cup", "feteer", "steak", "juice"];
 const ONE: Record<Kind, Kind[]> = { cup: ["cup"], steak: ["steak"], feteer: ["feteer"], iced: ["iced"], juice: ["juice"] };
 
-export function Hero3D({ accent, fallback, onPick }: { accent: string; fallback: ReactNode; onPick: (k: Kind) => void }) {
+export function Hero3D({
+  accent, fallback, onPick, labels, label,
+}: {
+  accent: string;
+  fallback: ReactNode;
+  onPick: (k: Kind, at: PickPoint) => void;
+  labels?: Partial<Record<Kind, string>>;
+  label: string;
+}) {
   return (
     <Suspense fallback={fallback}>
-      <Scene3D
-        kinds={HERO_KINDS}
-        accent={accent}
-        mode="row"
-        onPick={onPick}
-        fallback={fallback}
-        label="Coffee, iced coffee, feteer, steak and fresh juice. Tap one to jump to it."
-        className="w-full h-full"
-      />
+      <Scene3D kinds={HERO_KINDS} accent={accent} mode="row" onPick={onPick} labels={labels} fallback={fallback} label={label} className="w-full h-full" />
+    </Suspense>
+  );
+}
+
+export function Story3D(props: {
+  accent: string;
+  getStage: () => number;
+  flow: 1 | -1;
+  fallback: ReactNode;
+  label: string;
+  cursorLabel?: string;
+  className?: string;
+  focus?: { x: number; w: number };
+}) {
+  return (
+    <Suspense fallback={props.fallback}>
+      <StoryStage {...props} />
     </Suspense>
   );
 }

@@ -1,52 +1,61 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
-import { buildModel, type Kind } from "./models";
+import type { Kind } from "./models";
+import {
+  addLights, animatePiece, blobTexture, bounce, disposeScene, fitCamera, makePiece, makeRenderer,
+  pieceCorners, puffTexture, toScreen, type Piece,
+} from "./kit";
+
+export interface PickPoint { x: number; y: number }
 
 interface Props {
   kinds: Kind[];
   accent: string;
-  /** "row" lines the pieces up as a still life; "single" is one turntable piece. */
+  /** "row" is the hero still life; "single" is one turntable piece. */
   mode: "row" | "single";
-  onPick?: (kind: Kind) => void;
+  onPick?: (kind: Kind, at: PickPoint) => void;
+  /** Short names shown by the custom cursor while hovering a piece. */
+  labels?: Partial<Record<Kind, string>>;
   fallback: ReactNode;
   className?: string;
   label: string;
 }
 
-function blobTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 128;
-  const x = c.getContext("2d")!;
-  const g = x.createRadialGradient(64, 64, 4, 64, 64, 62);
-  g.addColorStop(0, "rgba(40,50,25,0.38)");
-  g.addColorStop(1, "rgba(40,50,25,0)");
-  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
-  return new THREE.CanvasTexture(c);
-}
-function puffTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 64;
-  const x = c.getContext("2d")!;
-  const g = x.createRadialGradient(32, 32, 2, 32, 32, 30);
-  g.addColorStop(0, "rgba(255,255,255,0.9)");
-  g.addColorStop(1, "rgba(255,255,255,0)");
-  x.fillStyle = g; x.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
-}
+/** Wide screens: the whole spread in one row. */
+const ROW: { kind: Kind; x: number; z: number; s: number }[] = [
+  { kind: "iced", x: -7, z: 0.2, s: 1 },
+  { kind: "cup", x: -3.5, z: -0.2, s: 1 },
+  { kind: "feteer", x: 0, z: 0.25, s: 1 },
+  { kind: "steak", x: 3.5, z: -0.2, s: 1 },
+  { kind: "juice", x: 7, z: 0.2, s: 1 },
+];
 
 /**
- * Small WebGL stage for the procedural food and drink models. The heavy part
- * (renderer, geometry, textures) is only built once the stage is close to the
- * viewport, so a page with four of these pays for the ones a person is
- * actually about to see, not all four at once on load. Renders only while on
- * screen, tunes down for touch devices, and hands back to the flat art when
- * WebGL is missing or the person prefers reduced motion.
+ * Phones and portrait tablets: four pieces in two depth rows, tall glasses at
+ * the back and the plates in front, seen from higher up so the group fills a
+ * tall frame instead of sitting as a thin strip across the middle.
  */
-export default function Scene3D({ kinds, accent, mode, onPick, fallback, className = "", label }: Props) {
+const STACK: { kind: Kind; x: number; z: number; s: number }[] = [
+  { kind: "iced", x: -1.0, z: -2.3, s: 1.5 },
+  { kind: "juice", x: 1.1, z: -1.8, s: 1.5 },
+  { kind: "feteer", x: -1.3, z: 1.5, s: 0.95 },
+  { kind: "steak", x: 1.3, z: 2.6, s: 0.95 },
+];
+
+/**
+ * WebGL stage for the procedural food and drink models. The heavy part
+ * (renderer, geometry, textures) is only built once the stage is close to the
+ * viewport. Renders only while on screen, tunes down for touch devices, and
+ * hands back to the flat art when WebGL is missing or the person prefers
+ * reduced motion.
+ */
+export default function Scene3D({ kinds, accent, mode, onPick, labels, fallback, className = "", label }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const pick = useRef(onPick);
   pick.current = onPick;
+  const names = useRef(labels);
+  names.current = labels;
 
   useEffect(() => {
     const el = wrap.current;
@@ -60,115 +69,76 @@ export default function Scene3D({ kinds, accent, mode, onPick, fallback, classNa
     function build() {
       if (built || cancelled) return;
       built = true;
+      const made = makeRenderer(el!);
+      if (!made) { setFailed(true); return; }
+      const { renderer, canvas } = made;
 
-      const coarse = window.matchMedia("(pointer: coarse)").matches;
-      let renderer: THREE.WebGLRenderer;
-      try {
-        renderer = new THREE.WebGLRenderer({ antialias: !coarse, alpha: true, powerPreference: "low-power" });
-      } catch { setFailed(true); return; }
-
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2));
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.05;
-      const canvas = renderer.domElement;
-      canvas.style.cssText = "display:block;width:100%;height:100%;touch-action:pan-y;outline:none";
-      el!.appendChild(canvas);
-
-      // Lights only, no PMREM-convolved environment: with several of these
-      // stages able to be on a page at once, skipping the environment render
-      // pass is the difference between a snappy mount and a stutter, and the
-      // matte/porcelain/glass materials here read fine off three lights.
       const scene = new THREE.Scene();
-      scene.add(new THREE.HemisphereLight(0xfff6e8, 0xdfe8cc, 0.7));
-      const sun = new THREE.DirectionalLight(0xffffff, 1.5);
-      sun.position.set(3, 6, 4); scene.add(sun);
-      const fill = new THREE.DirectionalLight(0xcfe0ff, 0.45);
-      fill.position.set(-4, 2, -3); scene.add(fill);
-
-      const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+      addLights(scene);
+      const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 200);
       const blob = blobTexture();
       const puff = puffTexture();
 
-      // Build every piece once, normalised to a common footprint.
-      interface Item { kind: Kind; group: THREE.Group; holder: THREE.Group; baseScale: number; phase: number; hover: number; }
-      const items: Item[] = kinds.map((kind, i) => {
-        const model = buildModel(kind, accent);
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const target = kind === "iced" || kind === "juice" ? 3.1 : 2.9;
-        const s = target / Math.max(size.y * (kind === "iced" || kind === "juice" ? 1 : 2.2), size.x, size.z);
-        model.scale.setScalar(s);
-        const b2 = new THREE.Box3().setFromObject(model);
-        model.position.y -= b2.min.y;
-        const holder = new THREE.Group();
-        holder.add(model);
-        const shadow = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), new THREE.MeshBasicMaterial({ map: blob, transparent: true, depthWrite: false }));
-        shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.01;
-        const root = new THREE.Group();
-        root.add(shadow, holder);
-        scene.add(root);
-        const steam = model.userData.steam as THREE.Vector3 | undefined;
-        if (steam) {
-          for (let k = 0; k < 7; k++) {
-            const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 }));
-            sp.userData = { puff: true, k, base: steam.clone().multiplyScalar(s) };
-            holder.add(sp);
-          }
-        }
-        return { kind, group: root, holder, baseScale: 1, phase: i * 1.3, hover: 0 };
+      const items: Piece[] = kinds.map((k, i) => {
+        const p = makePiece(k, accent, blob, puff, i * 1.3);
+        scene.add(p.root);
+        return p;
       });
+      const byKind = (k: Kind) => items.find((p) => p.kind === k);
 
-      const spacing = 3.5;
-      let visibleItems: Item[] = items;
-      let dist = 14;
+      let visible: Piece[] = items;
+      const base = new Map<Piece, number>();
+      let aim = new THREE.Vector3();
+      let camBase = new THREE.Vector3();
+      let narrow = false;
+
       function layout() {
         const w = el!.clientWidth || 1, h = el!.clientHeight || 1;
         renderer.setSize(w, h, false);
         camera.aspect = w / h;
-        if (mode === "single") {
-          visibleItems = items.slice(0, 1);
-          items.forEach((it, i) => (it.group.visible = i === 0));
-          items[0].group.position.set(0, 0, 0);
-          const tall = items[0].kind === "iced" || items[0].kind === "juice";
-          const halfH = tall ? 2.3 : 1.5;
-          dist = Math.max(halfH / Math.tan((camera.fov * Math.PI) / 360), 2.2 / (Math.tan((camera.fov * Math.PI) / 360) * camera.aspect));
-          camera.position.set(0, tall ? 2.0 : 2.4, dist);
-          camera.lookAt(0, tall ? 1.55 : 0.6, 0);
-        } else {
-          const narrow = camera.aspect < 1.25;
-          const wanted: Kind[] = narrow ? ["cup", "feteer", "steak"] : ["iced", "cup", "feteer", "steak", "juice"];
-          visibleItems = items.filter((it) => wanted.includes(it.kind));
-          items.forEach((it) => (it.group.visible = visibleItems.includes(it)));
-          const n = visibleItems.length;
-          const sp = narrow ? 1.85 : spacing;
-          visibleItems.forEach((it, i) => {
-            const mid = narrow && i === (n - 1) / 2;
-            it.group.scale.setScalar(narrow ? (mid ? 1.05 : 0.8) : 1);
-            it.group.position.set((i - (n - 1) / 2) * sp, 0, narrow ? (mid ? 1.5 : -0.9) : i % 2 ? -0.2 : 0.25);
-          });
-          const halfW = ((n - 1) * sp) / 2 + (narrow ? 1.2 : 1.9);
-          const halfH = narrow ? 1.7 : 2.1;
-          dist = Math.max(halfH / Math.tan((camera.fov * Math.PI) / 360), halfW / (Math.tan((camera.fov * Math.PI) / 360) * camera.aspect));
-          camera.position.set(0, 3.2, dist);
-          camera.lookAt(0, 1.05, 0);
-        }
         camera.updateProjectionMatrix();
+        items.forEach((p) => (p.root.visible = false));
+
+        if (mode === "single") {
+          const p = items[0];
+          p.root.visible = true; p.root.position.set(0, 0, 0); p.root.scale.setScalar(1);
+          visible = [p]; base.set(p, 1);
+          const f = fitCamera(camera, pieceCorners(p), 0.28, 0.8);
+          aim = f.target; camBase = camera.position.clone();
+          return;
+        }
+        narrow = camera.aspect < 1.25;
+        const plan = narrow ? STACK : ROW;
+        visible = [];
+        for (const slot of plan) {
+          const p = byKind(slot.kind);
+          if (!p) continue;
+          p.root.visible = true;
+          p.root.position.set(slot.x, 0, slot.z);
+          p.root.scale.setScalar(slot.s);
+          base.set(p, slot.s);
+          visible.push(p);
+        }
+        const pts: THREE.Vector3[] = [];
+        visible.forEach((p) => pieceCorners(p, pts));
+        const f = fitCamera(camera, pts, narrow ? 0.66 : 0.24, narrow ? 0.93 : 0.94);
+        aim = f.target; camBase = camera.position.clone();
       }
       layout();
       const ro = new ResizeObserver(layout);
       ro.observe(el!);
 
-      // Pointer: parallax, hover, click, drag
-      const ptr = { x: 0, y: 0, tx: 0, ty: 0, down: false, sx: 0, sy: 0, moved: 0, drag: 0, dragV: 0 };
+      // Pointer: parallax, hover, tap, drag-to-spin
+      const ptr = { x: 0, y: 0, tx: 0, ty: 0, down: false, sx: 0, lx: 0, moved: 0 };
+      let grabbed: Piece | null = null;
       const ray = new THREE.Raycaster();
-      let hovered: Item | null = null;
-      function hit(e: PointerEvent): Item | null {
+      let hovered: Piece | null = null;
+      function hit(e: PointerEvent): Piece | null {
         const r = canvas.getBoundingClientRect();
         const v = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
         ray.setFromCamera(v, camera);
-        let best: Item | null = null, bd = Infinity;
-        for (const it of visibleItems) {
+        let best: Piece | null = null, bd = Infinity;
+        for (const it of visible) {
           const hs = ray.intersectObject(it.holder, true);
           if (hs.length && hs[0].distance < bd) { bd = hs[0].distance; best = it; }
         }
@@ -179,27 +149,49 @@ export default function Scene3D({ kinds, accent, mode, onPick, fallback, classNa
         ptr.tx = ((e.clientX - r.left) / r.width) * 2 - 1;
         ptr.ty = ((e.clientY - r.top) / r.height) * 2 - 1;
         if (ptr.down) {
-          ptr.moved += Math.abs(e.clientX - ptr.sx) + Math.abs(e.clientY - ptr.sy);
-          ptr.dragV = (e.clientX - ptr.sx) * 0.012; ptr.drag += ptr.dragV;
-          ptr.sx = e.clientX; ptr.sy = e.clientY;
+          const dx = e.clientX - ptr.lx;
+          ptr.moved += Math.abs(dx);
+          ptr.lx = e.clientX;
+          const target = mode === "single" ? items[0] : grabbed;
+          if (target && ptr.moved > 6) { target.yawV = dx * 0.012; target.yaw += target.yawV; }
         } else if (mode === "row" && e.pointerType === "mouse") {
-          hovered = hit(e);
-          canvas.style.cursor = hovered ? "pointer" : "default";
+          const h = hit(e);
+          if (h !== hovered) {
+            hovered = h;
+            canvas.style.cursor = h ? "pointer" : "grab";
+            const n = h ? names.current?.[h.kind] : undefined;
+            if (n) canvas.dataset.cursor = n; else delete canvas.dataset.cursor;
+          }
         }
       };
-      const onDown = (e: PointerEvent) => { ptr.down = true; ptr.sx = e.clientX; ptr.sy = e.clientY; ptr.moved = 0; };
-      const onUp = (e: PointerEvent) => {
-        const wasClick = ptr.down && ptr.moved < 8;
-        ptr.down = false;
-        if (wasClick && mode === "row") { const h = hit(e); if (h) pick.current?.(h.kind); }
+      const onDown = (e: PointerEvent) => {
+        ptr.down = true; ptr.sx = ptr.lx = e.clientX; ptr.moved = 0;
+        grabbed = mode === "row" ? hit(e) : items[0];
       };
-      const onLeave = () => { ptr.tx = 0; ptr.ty = 0; hovered = null; ptr.down = false; };
+      const onUp = (e: PointerEvent) => {
+        if (!ptr.down) return;
+        const wasTap = ptr.moved < 8;
+        ptr.down = false;
+        if (!wasTap) { grabbed = null; return; }
+        const h = mode === "row" ? hit(e) : items[0];
+        grabbed = null;
+        if (!h) return;
+        bounce(h);
+        if (mode === "row" && pick.current) {
+          const top = new THREE.Vector3(0, h.height * (base.get(h) ?? 1) + 0.2, 0).add(h.root.position);
+          pick.current(h.kind, toScreen(top, camera, canvas));
+        }
+      };
+      const onLeave = () => { ptr.tx = 0; ptr.ty = 0; hovered = null; delete canvas.dataset.cursor; };
       canvas.addEventListener("pointermove", onMove);
       canvas.addEventListener("pointerdown", onDown);
       window.addEventListener("pointerup", onUp);
       canvas.addEventListener("pointerleave", onLeave);
+      canvas.addEventListener("pointercancel", () => { ptr.down = false; grabbed = null; });
+      if (mode === "row") { canvas.style.cursor = "grab"; }
+      if (mode === "single") canvas.dataset.cursor = "Drag";
 
-      // Tilt with the phone, where the browser lets us.
+      // Tilt with the phone, where the browser allows it.
       const onTilt = (e: DeviceOrientationEvent) => {
         if (e.gamma == null || e.beta == null) return;
         ptr.tx = Math.max(-1, Math.min(1, e.gamma / 30));
@@ -207,12 +199,15 @@ export default function Scene3D({ kinds, accent, mode, onPick, fallback, classNa
       };
       if (window.matchMedia("(hover: none)").matches) window.addEventListener("deviceorientation", onTilt);
 
-      // Render loop, only while on screen
+      // Render loop, only while on screen. Pieces pop in, staggered, the first
+      // time the stage is seen.
       let raf = 0, running = false, last = performance.now(), t = 0;
+      let introAt = -1;
+      const tmp = new THREE.Vector3();
       function frame(now: number) {
         const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
+        if (introAt < 0) introAt = t;
         ptr.x += (ptr.tx - ptr.x) * 0.06; ptr.y += (ptr.ty - ptr.y) * 0.06;
-        if (!ptr.down) { ptr.drag += ptr.dragV; ptr.dragV *= 0.94; }
 
         let scroll = 0;
         if (mode === "single") {
@@ -220,34 +215,36 @@ export default function Scene3D({ kinds, accent, mode, onPick, fallback, classNa
           scroll = ((window.innerHeight - r.top) / (window.innerHeight + r.height)) * Math.PI * 1.4;
         }
 
-        visibleItems.forEach((it) => {
-          const hv = hovered === it ? 1 : 0;
-          it.hover += (hv - it.hover) * 0.12;
-          const bob = Math.sin(t * 1.2 + it.phase) * 0.06;
-          it.holder.position.y = bob + it.hover * 0.18;
-          it.holder.scale.setScalar(1 + it.hover * 0.06);
-          if (mode === "single") it.holder.rotation.y = 0.5 + scroll + ptr.drag + t * 0.25;
-          else it.holder.rotation.y = Math.sin(t * 0.5 + it.phase) * 0.35 + ptr.x * 0.5 + it.hover * 0.6;
-          it.holder.rotation.x = mode === "row" ? ptr.y * 0.08 : 0;
-          it.holder.children.forEach((c) => {
-            if (c.userData?.puff) {
-              const k = c.userData.k as number, base = c.userData.base as THREE.Vector3;
-              const p = ((t * 0.28 + k / 7) % 1);
-              c.position.set(base.x + Math.sin(p * 6 + k) * 0.12, base.y + p * 1.4, base.z + Math.cos(p * 5 + k) * 0.08);
-              c.scale.setScalar(0.35 + p * 0.7);
-              (c as THREE.Sprite).material.opacity = Math.sin(p * Math.PI) * 0.4;
-            }
-          });
+        visible.forEach((p, i) => {
+          const hv = hovered === p ? 1 : 0;
+          p.hover += (hv - p.hover) * 0.12;
+          if (!(ptr.down && grabbed === p)) { p.yaw += p.yawV; p.yawV *= 0.94; }
+          const spin = animatePiece(p, t, dt);
+          // entrance: a quick pop with overshoot
+          const e = Math.max(0, Math.min(1, (t - introAt - 0.15 - i * 0.12) / 0.7));
+          const back = e === 1 ? 1 : 1 + 2.2 * Math.pow(e - 1, 3) + 1.2 * Math.pow(e - 1, 2);
+          p.root.scale.setScalar((base.get(p) ?? 1) * Math.max(0.001, back));
+          if (mode === "single") p.holder.rotation.y = 0.5 + scroll + p.yaw + t * 0.25 + spin;
+          else p.holder.rotation.y = Math.sin(t * 0.5 + p.phase) * 0.35 + ptr.x * 0.5 + p.hover * 0.6 + p.yaw + spin + (1 - e) * 1.5;
+          p.holder.rotation.x = mode === "row" ? ptr.y * 0.06 : 0;
         });
-        if (mode === "row") { camera.position.x = ptr.x * 0.6; camera.lookAt(0, 1.05, 0); }
+        if (mode === "row") {
+          const right = tmp.setFromMatrixColumn(camera.matrixWorld, 0);
+          camera.position.copy(camBase).addScaledVector(right, ptr.x * (narrow ? 0.35 : 0.6));
+          camera.position.y = camBase.y - ptr.y * 0.25;
+          camera.lookAt(aim);
+        }
         renderer.render(scene, camera);
         if (running) raf = requestAnimationFrame(frame);
       }
       const start = () => { if (!running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); } };
       const stop = () => { running = false; cancelAnimationFrame(raf); };
-      const playIO = new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop()), { threshold: 0.02 });
+      const playIO = new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? start() : stop()), { threshold: 0.02 });
       playIO.observe(el!);
-      const onVis = () => (document.hidden ? stop() : undefined);
+      const onVis = () => {
+        if (document.hidden) stop();
+        else { const r = el!.getBoundingClientRect(); if (r.bottom > 0 && r.top < window.innerHeight) start(); }
+      };
       document.addEventListener("visibilitychange", onVis);
 
       teardown = () => {
@@ -258,20 +255,14 @@ export default function Scene3D({ kinds, accent, mode, onPick, fallback, classNa
         canvas.removeEventListener("pointerleave", onLeave);
         window.removeEventListener("deviceorientation", onTilt);
         document.removeEventListener("visibilitychange", onVis);
-        scene.traverse((o) => {
-          const m = o as THREE.Mesh;
-          if (m.geometry) m.geometry.dispose();
-          const mat = m.material as THREE.Material | THREE.Material[] | undefined;
-          if (Array.isArray(mat)) mat.forEach((x) => x.dispose()); else mat?.dispose();
-        });
+        disposeScene(scene);
         blob.dispose(); puff.dispose();
         renderer.dispose();
+        renderer.forceContextLoss();
         canvas.remove();
       };
     }
 
-    // Don't pay for a renderer, geometry and textures until the stage is
-    // getting close to the viewport — a page can hold several of these.
     const warmIO = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { build(); warmIO.disconnect(); } },
       { rootMargin: "600px 0px" },

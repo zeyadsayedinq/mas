@@ -30,6 +30,10 @@ export interface Branch {
   rating?: number;
   reviews?: string;
   tags: string[];
+  /** What to search on Google Maps to land on the real listing. */
+  mapQuery: string;
+  /** Flip each to true once the value above is real. See config.ts. */
+  confirmed: { address: boolean; hours: boolean; phone: boolean; whatsapp: boolean };
   /** Position on the stylised map, 0 to 100. */
   x: number;
   y: number;
@@ -50,6 +54,8 @@ export const BRANCHES: Branch[] = [
     rating: 4.7,
     reviews: "1.5K",
     tags: ["Restaurant", "Terrace", "Shisha", "Desks"],
+    mapQuery: "Aroma Lounge Mivida New Cairo",
+    confirmed: { address: false, hours: false, phone: false, whatsapp: false },
     x: 30,
     y: 64,
   },
@@ -64,6 +70,8 @@ export const BRANCHES: Branch[] = [
     rating: 4.9,
     reviews: "80",
     tags: ["Family friendly", "Terrace", "Shisha"],
+    mapQuery: "Aroma Lounge Madinaty",
+    confirmed: { address: false, hours: false, phone: false, whatsapp: false },
     x: 71,
     y: 33,
   },

@@ -1,0 +1,59 @@
+/* ---------------------------------------------------------------------------
+   COVY illustrations (CovyArt.tsx): candle flicker, lamp breathing, steam and
+   the odd glint off the ice. Transform and opacity only, and every bit of it
+   stands down for reduced motion.
+--------------------------------------------------------------------------- */
+@keyframes caFlicker {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  18% { transform: scale(0.94, 1.07) rotate(-2.5deg); }
+  42% { transform: scale(1.04, 0.94) rotate(1.5deg); }
+  64% { transform: scale(0.97, 1.05) rotate(-1deg); }
+  82% { transform: scale(1.02, 0.97) rotate(2deg); }
+}
+@keyframes caHalo {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  42% { opacity: 0.62; transform: scale(0.93); }
+  66% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes caBreathe {
+  0%, 100% { opacity: 0.74; }
+  50% { opacity: 1; }
+}
+@keyframes caSteam {
+  0% { opacity: 0; transform: translateY(8px); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-18px); }
+}
+@keyframes caGlint {
+  0%, 70% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  80% { opacity: 1; transform: scale(1) rotate(45deg); }
+  90%, 100% { opacity: 0; transform: scale(0.3) rotate(90deg); }
+}
+@keyframes caTwinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.6); }
+  50% { opacity: 0.9; transform: scale(1); }
+}
+
+.ca-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: caFlicker 2.4s ease-in-out infinite; }
+.ca-halo { transform-box: fill-box; transform-origin: 50% 50%; animation: caHalo 2.4s ease-in-out infinite; }
+.ca-breathe { animation: caBreathe 6.5s ease-in-out infinite; }
+.ca-steam { opacity: 0; animation: caSteam 4.2s ease-out infinite; }
+.ca-glint { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: caGlint 7s ease-in-out infinite; }
+.ca-twinkle { transform-box: fill-box; transform-origin: 50% 50%; animation: caTwinkle 5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ca-flame, .ca-halo, .ca-breathe, .ca-steam, .ca-glint, .ca-twinkle { animation: none; }
+  .ca-steam { opacity: 0.5; }
+  .ca-glint { opacity: 0.8; transform: none; }
+  .ca-twinkle { opacity: 0.6; transform: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   The page dimmer (--cv-light, 0..1, set on the COVY page root). The lamp
+   brightens with it; the candle glows more as the room goes down. Outside
+   the COVY page the variable is unset and the defaults below apply.
+--------------------------------------------------------------------------- */
+.ca-lamp { opacity: calc(.12 + var(--cv-light, .62) * .95); }
+.ca-candle { opacity: calc(1.25 - var(--cv-light, .62) * .6); }
+.ca-shade-dim { opacity: calc((1 - var(--cv-light, .62)) * .42); }
+.ca-bulb { opacity: calc(.45 + var(--cv-light, .62) * .6); }

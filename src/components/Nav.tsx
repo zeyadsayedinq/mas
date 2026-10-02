@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useLang } from "../i18n";
+import { track } from "../track";
 import { Menu, X, ArrowUpLeft, AtSign } from "lucide-react";
 import { buttonColors, displayClass, type Brand } from "../brands";
 
@@ -33,6 +35,7 @@ function Lockup({
   small?: boolean;
   descriptor?: boolean;
 }) {
+  const { tr } = useLang();
   return (
     <span className="flex flex-col items-start gap-1">
       <img src={src} alt="MAS Egypt" className={small ? "h-5 w-auto" : "h-6 sm:h-7 w-auto"} />
@@ -41,7 +44,7 @@ function Lockup({
           className="font-archivo hidden sm:block text-[7px] font-medium uppercase whitespace-nowrap"
           style={{ color, opacity: 0.7, letterSpacing: "0.3em" }}
         >
-          Egypt · Food &amp; Beverage Group
+          {tr("Egypt · Food & Beverage Group", "مصر · مجموعة أغذية ومشروبات")}
         </span>
       )}
     </span>
@@ -63,8 +66,27 @@ function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/** EN | ع switch, pointing at the same page in the other language. */
+function LangSwitch({ color, bg, big = false }: { color: string; bg: string; big?: boolean }) {
+  const { ar, swap } = useLang();
+  const { pathname, hash } = useLocation();
+  return (
+    <Link
+      to={swap(pathname) + hash}
+      onClick={() => track("language_switch", { to: ar ? "en" : "ar" })}
+      className={big ? "text-sm font-semibold px-5 py-2.5 rounded-full border" : "text-[13px] font-semibold w-10 h-10 grid place-items-center rounded-full"}
+      style={{ color, background: big ? "transparent" : bg, borderColor: big ? color : undefined }}
+      lang={ar ? "en" : "ar"}
+      aria-label={ar ? "English version" : "النسخة العربية"}
+    >
+      {ar ? "EN" : big ? "العربية" : "ع"}
+    </Link>
+  );
+}
+
 export default function Nav({ brand, showParentLink = false, onLight }: NavProps) {
   const [open, setOpen] = useState(false);
+  const { tr, href } = useLang();
   const light = onLight ?? brand.ui.scheme === "light";
 
   // On a light page the logo keeps its real colours. On a dark one it is
@@ -109,7 +131,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
         style={light ? { background: hexToRgba(brand.ui.bg, 0.9), backdropFilter: "blur(10px)", borderBottom: `1px solid ${brand.ui.line}` } : undefined}
       >
         <div className="flex items-center gap-3">
-          <Link to={brand.path} className="flex items-center gap-2" style={{ color: fg }} aria-label={brand.name}>
+          <Link to={href(brand.path)} className="flex items-center gap-2" style={{ color: fg }} aria-label={brand.name}>
             {brand.key === "mas" ? (
               <Lockup src={light ? brand.logo! : brand.logoReversed ?? brand.logo!} color={fg} />
             ) : (
@@ -119,12 +141,12 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
           {showParentLink && (
             <Link
-              to="/"
-              className="hidden xl:flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] transition-opacity hover:opacity-100 opacity-60 border-l pl-3 ml-1"
+              to={href("/")}
+              className="hidden xl:flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] transition-opacity hover:opacity-100 opacity-60 border-s ps-3 ms-1"
               style={{ color: fg, borderColor: pillLine }}
             >
-              <ArrowUpLeft size={13} />
-              MAS Egypt
+              <ArrowUpLeft size={13} className="rtl:-scale-x-100" />
+              {tr("MAS Egypt", "ماس مصر")}
             </Link>
           )}
         </div>
@@ -137,7 +159,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
             <button
               key={item.label}
               onClick={() => go(item.target)}
-              className="font-archivo px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors hover:opacity-100"
+              className="font-archivo px-4 py-1.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-colors hover:opacity-100"
               style={{ color: i === 0 ? fg : fgMuted }}
             >
               {item.label}
@@ -146,6 +168,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
         </div>
 
         <div className="hidden lg:flex items-center gap-2">
+          <LangSwitch color={fg} bg={pillBg} />
           {brand.instagram && (
             <a
               href={`https://instagram.com/${brand.instagram}`}
@@ -159,7 +182,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
             </a>
           )}
           <button
-            onClick={() => go(brand.key === "aroma" ? "reserve" : "contact")}
+            onClick={() => { track("nav_cta", { brand: brand.key }); go(brand.key === "aroma" ? "reserve" : "contact"); }}
             className="font-archivo text-[13px] font-semibold px-6 py-2.5 rounded-full transition-transform hover:scale-[1.02]"
             style={light ? buttonColors(brand) : { background: "#ffffff", color: "#111827" }}
           >
@@ -167,15 +190,18 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
           </button>
         </div>
 
-        <button
-          onClick={() => setOpen(true)}
-          className="lg:hidden p-3 -mr-2 rounded-full"
-          style={{ color: fg }}
-          aria-label="Open menu"
-          aria-expanded={open}
-        >
-          <Menu size={22} />
-        </button>
+        <div className="lg:hidden flex items-center gap-1">
+          <LangSwitch color={fg} bg="transparent" />
+          <button
+            onClick={() => setOpen(true)}
+            className="p-3 -me-2 rounded-full"
+            style={{ color: fg }}
+            aria-label={tr("Open menu", "افتح القائمة")}
+            aria-expanded={open}
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </nav>
 
       {open && (
@@ -191,7 +217,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
                 <img src={logoSrc} alt={brand.name} className="h-8 w-auto" style={{ filter: logoFilter }} />
               )}
             </span>
-            <button onClick={() => setOpen(false)} className="p-3 -mr-2 rounded-full" style={{ color: fg }} aria-label="Close menu">
+            <button onClick={() => setOpen(false)} className="p-3 -me-2 rounded-full" style={{ color: fg }} aria-label={tr("Close menu", "اقفل القائمة")}>
               <X size={22} />
             </button>
           </div>
@@ -201,7 +227,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
               <button
                 key={item.label}
                 onClick={() => go(item.target)}
-                className={`text-left text-3xl py-3 border-b ${displayClass(brand.ui) || "font-medium tracking-[-0.02em]"}`}
+                className={`text-start text-3xl py-3 border-b ${displayClass(brand.ui) || "font-medium tracking-[-0.02em]"}`}
                 style={{ color: fg, borderColor: pillLine }}
               >
                 {item.label}
@@ -209,14 +235,15 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
             ))}
 
             <button
-              onClick={() => go(brand.key === "aroma" ? "reserve" : "contact")}
+              onClick={() => { track("nav_cta", { brand: brand.key }); go(brand.key === "aroma" ? "reserve" : "contact"); }}
               className="mt-6 self-start text-sm font-semibold px-7 py-3 rounded-full"
               style={buttonColors(brand)}
             >
               {brand.navCta}
             </button>
 
-            <div className="mt-6 flex items-center gap-5">
+            <div className="mt-6 flex flex-wrap items-center gap-5">
+              <LangSwitch color={fg} bg="transparent" big />
               {brand.instagram && (
                 <a
                   href={`https://instagram.com/${brand.instagram}`}
@@ -231,12 +258,12 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
               )}
               {showParentLink && (
                 <Link
-                  to="/"
+                  to={href("/")}
                   onClick={() => setOpen(false)}
                   className="text-xs uppercase tracking-[0.16em]"
                   style={{ color: fgMuted }}
                 >
-                  Back to MAS Egypt
+                  {tr("Back to MAS Egypt", "رجوع لماس مصر")}
                 </Link>
               )}
             </div>

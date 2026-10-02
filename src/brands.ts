@@ -784,6 +784,8 @@ export const CASE_STUDIES: CaseStudy[] = [
 ];
 
 export interface NowItem {
+  /** Only confirmed items show on the live site. */
+  confirmed?: boolean;
   date: string;
   kind: "Opening" | "In build" | "Group" | "Hiring";
   title: string;
@@ -799,12 +801,14 @@ export interface NowItem {
  */
 export const NOW: NowItem[] = [
   {
+    confirmed: true,
     date: "Now open",
     kind: "Opening",
     title: "Aroma Lounge, Madinaty",
     body: "The second Aroma room, running the full kitchen, the terrace and the desk floor from morning through to close.",
   },
   {
+    confirmed: true,
     date: "Now open",
     kind: "Opening",
     title: "Aroma Lounge, Mivida",

@@ -1,18 +1,24 @@
 import Reveal from "./Reveal";
 import Eyebrow from "./Eyebrow";
+import Kinetic from "./Kinetic";
+import { useLang } from "../i18n";
 import { displayClass, headingFace, headingTracking, labelColor, type Brand } from "../brands";
 
 interface AboutProps {
+  /** Already localised by the caller (useBrand). */
   brand: Brand;
   /** Aroma keeps its lockup elsewhere, so it can turn the plate off here. */
   showPlate?: boolean;
 }
 
 export default function About({ brand, showPlate = true }: AboutProps) {
+  const { tr } = useLang();
   const { about, ui } = brand;
   const display = displayClass(ui);
   const tight = headingTracking(ui);
   const face = headingFace(ui);
+  // The group page asked for less motion, so it gets the quieter curtain.
+  const variant = brand.key === "aroma" ? "rise" : "curtain";
 
   return (
     <section
@@ -25,16 +31,14 @@ export default function About({ brand, showPlate = true }: AboutProps) {
           <Eyebrow brand={brand} className="mb-6">{about.eyebrow}</Eyebrow>
         </Reveal>
 
-        <Reveal delay={0.06}>
-          <h2 className="leading-[1.05] max-w-3xl" style={{ color: ui.text }}>
-            <span className={`block text-4xl sm:text-5xl md:text-6xl ${display}`}>
-              {about.headingItalic}
-            </span>
-            <span className={`block text-4xl sm:text-5xl md:text-6xl ${tight} ${face}`}>
-              {about.heading}
-            </span>
-          </h2>
-        </Reveal>
+        <h2 className="leading-[1.05] max-w-3xl" style={{ color: ui.text }}>
+          <span className={`block text-4xl sm:text-5xl md:text-6xl ${display}`}>
+            <Kinetic text={about.headingItalic} variant={variant} />
+          </span>
+          <span className={`block text-4xl sm:text-5xl md:text-6xl ${tight} ${face}`}>
+            <Kinetic text={about.heading} variant={variant} delay={0.18} />
+          </span>
+        </h2>
 
         <div
           className={`mt-12 sm:mt-16 grid gap-8 md:gap-12 ${
@@ -59,7 +63,7 @@ export default function About({ brand, showPlate = true }: AboutProps) {
                 className="rounded-2xl px-10 sm:px-16 py-10 sm:py-12 flex items-center justify-center w-full sm:w-auto"
                 style={{ background: brand.plateBg }}
               >
-                <img src={brand.logo} alt={`${brand.name} logo`} className="h-16 sm:h-20 w-auto" />
+                <img src={brand.logo} alt={tr(`${brand.name} logo`, `شعار ${brand.name}`)} className="h-16 sm:h-20 w-auto" />
               </div>
             </div>
           </Reveal>

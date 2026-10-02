@@ -33,8 +33,8 @@ interface ScrollShowcaseProps {
 }
 
 const CORNER_CLASS: Record<ShowcaseFeature["corner"], string> = {
-  tl: "left-0 top-[18%] sm:left-[4%] md:left-[8%] items-center flex-row",
-  tr: "right-0 top-[18%] sm:right-[4%] md:right-[8%] items-center flex-row-reverse",
+  tl: "left-0 top-[30%] sm:left-[4%] md:left-[8%] items-center flex-row",
+  tr: "right-0 top-[30%] sm:right-[4%] md:right-[8%] items-center flex-row-reverse",
   bl: "left-0 bottom-[24%] sm:left-[4%] md:left-[8%] items-center flex-row",
   br: "right-0 bottom-[24%] sm:right-[4%] md:right-[8%] items-center flex-row-reverse",
 };
@@ -74,8 +74,11 @@ export default function ScrollShowcase({
   const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(false);
-  const isPhone = useMediaQuery("(max-width: 639px)");
+  // Phones and every iPad orientation up to 1279px wide. The four corner pills
+  // need a desktop-wide stage; anything narrower gets the grid under the product.
+  const isPhone = useMediaQuery("(max-width: 1279px)");
   const isTouch = useMediaQuery("(hover: none)");
+  const isPortrait = useMediaQuery("(orientation: portrait)");
 
   useEffect(() => {
     let frame = 0;
@@ -130,7 +133,8 @@ export default function ScrollShowcase({
           <div
             className="absolute inset-x-0 text-center px-5 pointer-events-none"
             style={{
-              top: `${10 + (1 - headingShift) * 6}%`,
+              // Never higher than the nav bar, however short the screen is.
+              top: `max(5.25rem, ${10 + (1 - headingShift) * 6}%)`,
               opacity: (0.25 + headingShift * 0.75) * (open ? 0.25 : 1),
               transition: "opacity 250ms ease",
             }}
@@ -147,7 +151,7 @@ export default function ScrollShowcase({
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={`${headingItalic} ${heading}. Show menu items`}
-            className="relative rounded-full transition-transform duration-300 hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 w-[76vw] max-w-[500px] sm:w-[50vw] md:w-[42vw]"
+            className="relative rounded-full transition-transform duration-300 hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 w-[min(76vw,44dvh)] max-w-[560px] sm:w-[min(54vw,46dvh)] xl:w-[min(42vw,58dvh)] xl:max-w-[500px]"
             style={{
               transform: `translateY(${lift - (open ? 90 : isPhone ? 60 : 26)}px) scale(${scale * (open ? 0.72 : 1)})`,
               transition: "transform 420ms cubic-bezier(0.16,1,0.3,1)",
@@ -160,7 +164,8 @@ export default function ScrollShowcase({
           <div
             className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] pointer-events-none"
             style={{
-              bottom: isPhone ? "calc(env(safe-area-inset-bottom) + 6%)" : "10%",
+              // In portrait the reserve bar sits along the bottom, so the hint rides above it.
+              bottom: isPhone ? (isPortrait ? "calc(env(safe-area-inset-bottom) + 88px)" : "4%") : "10%",
               color: textMuted,
               opacity: open ? 0 : Math.min(1, Math.max(0, (progress - 0.32) / 0.12)),
               transition: "opacity 250ms ease",
@@ -204,7 +209,7 @@ export default function ScrollShowcase({
               features stack as a two by two grid under the product instead. */}
           {isPhone && (
             <div
-              className="absolute left-4 right-4 grid grid-cols-2 gap-2.5 pointer-events-none"
+              className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[min(680px,92vw)] landscape:sm:w-[min(1080px,94vw)] grid grid-cols-2 landscape:sm:grid-cols-4 gap-2.5 sm:gap-3 pointer-events-none"
               style={{ bottom: "calc(env(safe-area-inset-bottom) + 15%)" }}
             >
               {features.map((f, i) => {
@@ -213,7 +218,7 @@ export default function ScrollShowcase({
                 return (
                   <div
                     key={f.label}
-                    className="flex items-center gap-2.5 rounded-xl p-2 backdrop-blur-sm"
+                    className="flex items-center gap-2.5 sm:gap-3 rounded-xl p-2 sm:p-2.5 backdrop-blur-sm"
                     style={{
                       background: pillBg,
                       border: `1px solid ${line}`,
@@ -223,12 +228,12 @@ export default function ScrollShowcase({
                     }}
                   >
                     <span
-                      className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                      className="shrink-0 w-9 h-9 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center"
                       style={{ background: accent, color: accentText }}
                     >
                       {f.icon}
                     </span>
-                    <span className="text-[11px] leading-snug font-medium" style={{ color: textMuted }}>
+                    <span className="text-[11px] sm:text-sm leading-snug font-medium" style={{ color: textMuted }}>
                       {f.label}
                     </span>
                   </div>

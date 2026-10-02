@@ -1,0 +1,90 @@
+/* Aroma content sections: menu, desks, branches, reservation, gallery, footer.
+   Prefix: ac-  Everything animated here moves transform/opacity only. */
+
+/* ---------- Desks: swipe rail on phones, grid from 640px ---------- */
+.rail.ac-desk-rail > * { width: min(78vw, 300px); }
+@media (min-width: 640px) {
+  .rail.ac-desk-rail {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;
+    overflow: visible; margin-inline: 0; padding-inline: 0;
+  }
+  .rail.ac-desk-rail > * { width: auto; }
+}
+.ac-rail-dots { display: none; justify-content: center; gap: 6px; }
+@media (max-width: 639px) { .ac-rail-dots { display: flex; } }
+.ac-rail-dots span { width: 6px; height: 6px; border-radius: 999px; background: rgba(35,48,26,0.18); transition: transform .3s ease, background-color .3s ease; }
+.ac-rail-dots span.on { background: #82A541; transform: scale(1.35); }
+
+/* ---------- Reservation date rail: bleeds to the card's edges, not the page's ---------- */
+.rail.ac-date-rail { margin-inline: -1.25rem; padding-inline: 1.25rem; scroll-padding-inline: 1.25rem; }
+@media (min-width: 640px) { .rail.ac-date-rail { margin-inline: -2.25rem; padding-inline: 2.25rem; scroll-padding-inline: 2.25rem; } }
+
+/* ---------- Menu: result tiles re-enter on tab change ---------- */
+@keyframes acTileIn { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+.ac-tile { animation: acTileIn .55s cubic-bezier(.16,1,.3,1) both; }
+.ac-mark { background: rgba(130,165,65,0.22); color: inherit; border-radius: 3px; padding: 0 1px; }
+
+/* ---------- Segmented tabs with a sliding pill ---------- */
+.ac-seg { position: relative; display: inline-flex; padding: 4px; border-radius: 999px; isolation: isolate; }
+.ac-seg-pill { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 999px; z-index: -1;
+  transition: transform .45s cubic-bezier(.16,1,.3,1), width .45s cubic-bezier(.16,1,.3,1); }
+
+/* ---------- Map placeholder ---------- */
+.ac-map-grid {
+  background-image:
+    linear-gradient(rgba(130,165,65,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130,165,65,0.10) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+@keyframes acPinBob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+.ac-pin-bob { animation: acPinBob 1.8s ease-in-out infinite; }
+@keyframes acPulse { 0% { transform: scale(.6); opacity: .5 } 100% { transform: scale(2.4); opacity: 0 } }
+.ac-pulse { animation: acPulse 1.8s ease-out infinite; }
+.ac-map-frame { transition: opacity .5s ease; }
+
+/* ---------- Gallery ---------- */
+.ac-gal-col { will-change: transform; }
+.ac-gal-tile img { transition: transform .8s cubic-bezier(.16,1,.3,1); }
+.ac-gal-tile .ac-gal-cap { transition: opacity .35s ease, transform .35s ease; }
+@media (hover: hover) {
+  .ac-gal-tile .ac-gal-cap { opacity: 0; transform: translateY(6px); }
+  .ac-gal-tile:hover img, .ac-gal-tile:focus-visible img { transform: scale(1.06); }
+  .ac-gal-tile:hover .ac-gal-cap, .ac-gal-tile:focus-visible .ac-gal-cap { opacity: 1; transform: none; }
+}
+
+/* ---------- Lightbox ---------- */
+@keyframes acFadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes acLbIn { from { opacity: 0; transform: translate3d(var(--ac-from, 0px), 0, 0) scale(.97) } to { opacity: 1; transform: none } }
+.ac-lb { animation: acFadeIn .25s ease both; }
+.ac-lb-img { animation: acLbIn .4s cubic-bezier(.16,1,.3,1) both; }
+
+/* ---------- Confetti: beans and leaves ---------- */
+.ac-confetti { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 5; }
+.ac-confetti > span {
+  position: absolute; left: 50%; top: 42%; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  opacity: 0; will-change: transform, opacity;
+  animation: acBurst 1.2s cubic-bezier(.12,.75,.3,1) forwards;
+}
+@keyframes acBurst {
+  0%   { opacity: 0; transform: translate3d(0,0,0) rotate(0deg) scale(.4); }
+  12%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--r)) scale(1); }
+}
+
+/* ---------- Success tick ---------- */
+@keyframes acPop { 0% { transform: scale(.4); opacity: 0 } 60% { transform: scale(1.12); opacity: 1 } 100% { transform: scale(1) } }
+.ac-pop { animation: acPop .6s cubic-bezier(.2,.9,.25,1.2) both; }
+
+/* ---------- Step panel slide ---------- */
+@keyframes acStepIn { from { opacity: 0; transform: translate3d(14px,0,0) } to { opacity: 1; transform: none } }
+.ac-step { animation: acStepIn .45s cubic-bezier(.16,1,.3,1) both; }
+@keyframes acStepInRtl { from { opacity: 0; transform: translate3d(-14px,0,0) } to { opacity: 1; transform: none } }
+[dir="rtl"] .ac-step { animation-name: acStepInRtl; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-tile, .ac-lb, .ac-lb-img, .ac-pop, .ac-step, .ac-pin-bob, .ac-pulse { animation: none !important; }
+  .ac-confetti { display: none; }
+  .ac-gal-col { transform: none !important; }
+  .ac-gal-tile img, .ac-seg-pill, .ac-map-frame { transition: none !important; }
+}

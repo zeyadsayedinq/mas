@@ -1,95 +1,127 @@
 import { ArrowRight } from "lucide-react";
+import Kinetic from "./Kinetic";
 import { buttonColors, type Brand } from "../brands";
+import { useBrand } from "../localize";
+import { useLang } from "../i18n";
 
 interface MasHeroProps {
   brand: Brand;
 }
 
 /**
- * The group opener. No cursor spotlight, no canvas, no zoom.
+ * The group opener. States what the group is and gets out of the way.
  *
- * This page sells to venue owners, landlords, suppliers and investors, not to
- * diners, so it states what the group is and gets out of the way. The only
- * motion is the entrance fade the rest of the site already uses.
+ * The headline arrives with the quiet curtain reveal, nothing else moves. The
+ * right half carries a small "the group" card that answers the first question
+ * a partner has, which is what MAS owns and what it runs for other people.
  *
- * The stone sits behind the headline at low opacity. The manual keeps the
- * wordmark and the stone out of the same lockup, and this is not a lockup: it
- * is a ground, set well outside the mark's clear space.
+ * The stone sits behind at low opacity as a ground, not a lockup.
  */
 export default function MasHero({ brand }: MasHeroProps) {
   const ui = brand.ui;
+  const { tr } = useLang();
+  const aroma = useBrand("aroma");
+  const covy = useBrand("covy");
 
-  const go = (id: string) =>
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const go = (id: string) => {
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+  };
 
   return (
     <section id="top" className="relative overflow-hidden px-5 sm:px-10 md:px-14" style={{ background: ui.bg }}>
-      {/* A quiet green wash in the corner, the freshest touch on an otherwise
-          restrained white ground. Kept faint enough to read as light rather
-          than as a colour block. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 -left-32 h-[520px] w-[520px] rounded-full"
-        style={{ background: `radial-gradient(circle, ${brand.accent}1a 0%, transparent 70%)` }}
-      />
-
       {/* the stone, as a ground rather than a mark */}
       {brand.mark && (
-        /* The fade lives on the wrapper. Putting it on the image would let the
-           animation's own opacity override the tint and print the stone solid. */
         <div
           aria-hidden
-          className="hero-anim hero-fade pointer-events-none absolute -right-24 sm:-right-10 top-28 sm:top-32"
+          className="hero-anim hero-fade pointer-events-none absolute -end-28 sm:-end-10 top-[430px] sm:top-32"
           style={{ animationDelay: "0.55s" }}
         >
-          <img src={brand.mark} alt="" className="h-[300px] sm:h-[420px] md:h-[500px] w-auto" style={{ opacity: 0.055 }} />
+          <img src={brand.mark} alt="" className="h-[260px] sm:h-[420px] md:h-[500px] w-auto" style={{ opacity: 0.05 }} />
         </div>
       )}
 
-      <div className="relative mx-auto max-w-6xl pt-32 sm:pt-44 pb-20 sm:pb-28">
-        <p
-          className="hero-anim hero-fade flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.28em] mb-8"
-          style={{ color: brand.accent, animationDelay: "0.05s" }}
-        >
-          <span aria-hidden className="inline-block w-2 h-2 rotate-45" style={{ background: brand.accent }} />
-          Cairo · Food and beverage group
-        </p>
-
-        <h1
-          className="hero-anim hero-fade max-w-4xl text-[3rem] sm:text-7xl md:text-[5.5rem] font-semibold leading-[0.95] tracking-[-0.05em]"
-          style={{ color: ui.text, animationDelay: "0.14s" }}
-        >
-          {brand.hero.line1}
-          <br />
-          <span style={{ color: ui.textFaint }}>{brand.hero.line2}</span>
-        </h1>
-
-        <p
-          className="hero-anim hero-fade mt-8 max-w-xl text-[16px] sm:text-[17px] leading-relaxed"
-          style={{ color: ui.textMuted, animationDelay: "0.24s" }}
-        >
-          {brand.hero.aside}
-        </p>
-
-        <div className="hero-anim hero-fade mt-10 flex flex-wrap gap-3" style={{ animationDelay: "0.32s" }}>
-          <button
-            onClick={() => go("services")}
-            className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-full transition-transform hover:scale-[1.02]"
-            style={buttonColors(brand)}
+      <div className="relative mx-auto max-w-6xl pt-32 sm:pt-40 lg:pt-44 pb-16 sm:pb-24 grid gap-12 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.8fr)] lg:gap-14 lg:items-end">
+        <div className="min-w-0">
+          <p
+            className="hero-anim hero-fade flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.28em] mb-7 sm:mb-8"
+            style={{ color: brand.accent, animationDelay: "0.05s" }}
           >
-            {brand.hero.cta}
-            <ArrowRight size={15} />
-          </button>
-          <button
-            onClick={() => go("brands")}
-            className="text-sm font-semibold px-7 py-3.5 rounded-full border transition-colors"
-            style={{ borderColor: ui.line, color: ui.text }}
+            <span aria-hidden className="inline-block w-2 h-2 rotate-45" style={{ background: brand.accent }} />
+            {tr("Cairo · Food and beverage group", "القاهرة · مجموعة أغذية ومشروبات")}
+          </p>
+
+          <h1 className="mas-h1 font-semibold leading-[1.0] tracking-[-0.045em]" style={{ color: ui.text }}>
+            <Kinetic text={brand.hero.line1} variant="curtain" delay={0.1} stagger={0.07} />
+            <Kinetic text={brand.hero.line2} variant="curtain" delay={0.3} stagger={0.07} style={{ color: ui.textFaint }} />
+          </h1>
+
+          <p
+            className="hero-anim hero-fade mt-7 sm:mt-8 max-w-xl text-[16px] sm:text-[17px] leading-relaxed"
+            style={{ color: ui.textMuted, animationDelay: "0.45s" }}
           >
-            Our brands
-          </button>
+            {brand.hero.aside}
+          </p>
+
+          <div className="hero-anim hero-fade mt-9 sm:mt-10 flex flex-wrap gap-3" style={{ animationDelay: "0.55s" }}>
+            <button
+              onClick={() => go("services")}
+              className="inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-full transition-colors"
+              style={buttonColors(brand)}
+            >
+              {brand.hero.cta}
+              <ArrowRight size={15} className="rtl:-scale-x-100" aria-hidden />
+            </button>
+            <button
+              onClick={() => go("brands")}
+              className="min-h-[48px] text-sm font-semibold px-7 py-3.5 rounded-full border transition-colors hover:bg-black/[0.03]"
+              style={{ borderColor: ui.line, color: ui.text }}
+            >
+              {tr("Our brands", "علاماتنا")}
+            </button>
+          </div>
         </div>
-      </div>
 
+        {/* The group at a glance: owned versus operated, the one distinction
+            a partner needs before anything else. */}
+        <aside
+          aria-label={tr("The group at a glance", "المجموعة باختصار")}
+          className="mas-panel min-w-0 rounded-2xl border p-6 sm:p-7 lg:mb-2"
+          style={{ borderColor: ui.line, background: "rgba(255,255,255,0.86)", backdropFilter: "blur(6px)" }}
+        >
+          <p className="flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.26em] mb-5" style={{ color: ui.textMuted }}>
+            <span aria-hidden className="inline-block w-1.5 h-1.5 rotate-45" style={{ background: brand.accent }} />
+            {tr("The group", "المجموعة")}
+          </p>
+
+          <dl>
+            <div className="pb-5">
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-2" style={{ color: brand.accent }}>
+                {tr("Owned", "علامات نملكها")}
+              </dt>
+              <dd className="text-[19px] font-semibold tracking-[-0.02em]" style={{ color: ui.text }}>
+                {aroma.name}
+                <span aria-hidden className="mx-2" style={{ color: ui.textFaint }}>·</span>
+                {covy.name}
+              </dd>
+              <dd className="mt-1 text-[13px] leading-snug" style={{ color: ui.textFaint }}>
+                {tr("Built, branded and run by the group.", "بنتها المجموعة وتحمل اسمها وتديرها.")}
+              </dd>
+            </div>
+            <div className="pt-5 border-t" style={{ borderColor: ui.line }}>
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-2" style={{ color: brand.accent }}>
+                {tr("Operated for owners", "نديرها لملّاكها")}
+              </dt>
+              <dd className="text-[19px] font-semibold tracking-[-0.02em]" style={{ color: ui.text }}>
+                {tr("Your venue, our team", "مكانك، وفريقنا")}
+              </dd>
+              <dd className="mt-1 text-[13px] leading-snug" style={{ color: ui.textFaint }}>
+                {tr("The name over the door stays yours. Venue list on request.", "يبقى الاسم على الباب اسمك. قائمة الأماكن عند الطلب.")}
+              </dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
     </section>
   );
 }

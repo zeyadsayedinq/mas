@@ -21,6 +21,7 @@ export default function VideoBand({ src, poster, children, align = "bottom", cla
   const vid = useRef<HTMLVideoElement>(null);
   const [still, setStill] = useState(false);
   const [near, setNear] = useState(false);
+  const media = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -42,13 +43,36 @@ export default function VideoBand({ src, poster, children, align = "bottom", cla
     return () => io.disconnect();
   }, []);
 
+  // Footage drifts a little slower than the page and eases in from a slight
+  // zoom as the band crosses the screen. Transform only, only while visible.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const el = box.current, m = media.current;
+    if (!el || !m) return;
+    let raf = 0, on = false;
+    const paint = () => {
+      raf = 0;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const p = Math.max(-1, Math.min(1, (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2)));
+      const scale = 1.14 - (1 - Math.abs(p)) * 0.08;
+      m.style.transform = `translate3d(0, ${(p * 7).toFixed(2)}%, 0) scale(${scale.toFixed(3)})`;
+    };
+    const onScroll = () => { if (on && !raf) raf = requestAnimationFrame(paint); };
+    const io = new IntersectionObserver(([e]) => { on = e.isIntersecting; if (on) paint(); }, { rootMargin: "100px 0px" });
+    io.observe(el);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { io.disconnect(); window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+  }, []);
+
   return (
     <section ref={box} id={id} className={`relative isolate overflow-hidden bg-black text-white ${className}`}>
-      <img src={poster} alt="" aria-hidden className="absolute inset-0 -z-20 h-full w-full object-cover" style={{ objectPosition }} loading="lazy" />
+      <div ref={media} aria-hidden className="absolute inset-0 -z-20" style={{ transform: "scale(1.06)", willChange: "transform" }}>
+      <img src={poster} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition }} loading="lazy" />
       {!still && (
         <video
           ref={vid}
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
           style={{ objectPosition }}
           src={near ? src : undefined}
           poster={poster}
@@ -60,6 +84,7 @@ export default function VideoBand({ src, poster, children, align = "bottom", cla
           tabIndex={-1}
         />
       )}
+      </div>
       {/* black to clear, stronger where the copy sits */}
       <div
         aria-hidden

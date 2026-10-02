@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../router";
 import { ArrowRight } from "lucide-react";
 import Reveal from "./Reveal";
 import Eyebrow from "./Eyebrow";

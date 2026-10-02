@@ -23,10 +23,21 @@ function bump(t: number, c: number, w: number) {
   return Math.exp(-(d * d) / (w * w));
 }
 
-function canvasTex(w: number, h: number, draw: (x: CanvasRenderingContext2D) => void) {
-  const c = document.createElement("canvas");
-  c.width = w; c.height = h;
-  draw(c.getContext("2d")!);
+/**
+ * The drawn canvases are the expensive part of a model and they are identical
+ * every time, so each is painted once and shared: the hero and the scroll
+ * story both show a steak, but only the first one pays for its texture.
+ */
+const drawn = new Map<string, HTMLCanvasElement>();
+
+function canvasTex(key: string, w: number, h: number, draw: (x: CanvasRenderingContext2D) => void) {
+  let c = drawn.get(key);
+  if (!c) {
+    c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    draw(c.getContext("2d")!);
+    drawn.set(key, c);
+  }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
@@ -123,10 +134,10 @@ function slab(shape: THREE.Shape, depth: number, bevel: number, segs = 3, curveS
 }
 
 /** Canvas whose drawing space is the outline's own units (y up), uniformly scaled. */
-function shapeCanvas(box: THREE.Box2, w: number, h: number, draw: (x: CanvasRenderingContext2D, px: number) => void) {
+function shapeCanvas(key: string, box: THREE.Box2, w: number, h: number, draw: (x: CanvasRenderingContext2D, px: number) => void) {
   const W = 512, H = Math.round((512 * h) / w);
   const k = W / w;
-  return canvasTex(W, H, (x) => {
+  return canvasTex(key, W, H, (x) => {
     x.setTransform(k, 0, 0, -k, -box.min.x * k, box.max.y * k);
     draw(x, 1 / k);
   });
@@ -141,7 +152,7 @@ const tracePoly = (x: CanvasRenderingContext2D, pts: THREE.Vector2[]) => {
 /* ---------------------------------------------------------------- coffee cup */
 
 function latteTex() {
-  return canvasTex(512, 512, (x) => {
+  return canvasTex("latteTex", 512, 512, (x) => {
     const r = rng(11), c = 256;
     x.fillStyle = "#3e2210"; x.fillRect(0, 0, 512, 512);
     const g = x.createRadialGradient(c, c, 40, c, c, 256);
@@ -212,7 +223,7 @@ const RX = 0.9, RY = 0.6;
 const ribeyeAt = (t: number, s = 1) => V2(Math.cos(t) * RX * ribeyeR(t) * s, Math.sin(t) * RY * ribeyeR(t) * s);
 
 function ribeyeTex(box: THREE.Box2, w: number, h: number, outline: THREE.Vector2[]) {
-  return shapeCanvas(box, w, h, (x, px) => {
+  return shapeCanvas("ribeyeTex", box, w, h, (x, px) => {
     const r = rng(3);
     x.fillStyle = "#4a2412"; x.fillRect(box.min.x - 1, box.min.y - 1, w + 2, h + 2);
     x.save();
@@ -302,7 +313,7 @@ function ribeyeTex(box: THREE.Box2, w: number, h: number, outline: THREE.Vector2
 }
 
 function woodTex(box: THREE.Box2, w: number, h: number, groove: THREE.Vector2[]) {
-  return shapeCanvas(box, w, h, (x, px) => {
+  return shapeCanvas("woodTex", box, w, h, (x, px) => {
     const r = rng(21);
     const base = x.createLinearGradient(box.min.x, 0, box.max.x, 0);
     base.addColorStop(0, "#a8713e"); base.addColorStop(0.5, "#b98249"); base.addColorStop(1, "#a36c3a");
@@ -454,7 +465,7 @@ function steak() {
 const wob = (a: number) => 1 + 0.02 * Math.sin(3 * a + 0.4) + 0.014 * Math.sin(5 * a + 1.3) + 0.007 * Math.sin(9 * a + 2);
 
 function feteerTopTex() {
-  return canvasTex(512, 512, (x) => {
+  return canvasTex("feteerTopTex", 512, 512, (x) => {
     const r = rng(17), c = 256;
     const inDisc = () => { const a = r() * TAU, d = Math.pow(r(), 0.4) * 244; return [c + Math.cos(a) * d, c + Math.sin(a) * d, d / 244]; };
     x.fillStyle = "#a8641f"; x.fillRect(0, 0, 512, 512);
@@ -521,7 +532,7 @@ function feteerTopTex() {
 }
 
 function feteerSideTex() {
-  return canvasTex(512, 256, (x) => {
+  return canvasTex("feteerSideTex", 512, 256, (x) => {
     const r = rng(29), W = 512, H = 256;
     const g = x.createLinearGradient(0, H, 0, 0);
     g.addColorStop(0, "#e4b264"); g.addColorStop(0.6, "#d9a049"); g.addColorStop(1, "#b9772a");
@@ -613,7 +624,7 @@ function feteer(accent: string) {
 /* ------------------------------------------------------------- tall glasses */
 
 function icedLiquidTex() {
-  return canvasTex(256, 512, (x) => {
+  return canvasTex("icedLiquidTex", 256, 512, (x) => {
     const r = rng(41), W = 256, H = 512;
     const g = x.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "#4a2813"); g.addColorStop(0.24, "#5a3118"); g.addColorStop(0.4, "#8a5a36");
@@ -656,7 +667,7 @@ function icedLiquidTex() {
 }
 
 function juiceLiquidTex() {
-  return canvasTex(256, 512, (x) => {
+  return canvasTex("juiceLiquidTex", 256, 512, (x) => {
     const r = rng(53), W = 256, H = 512;
     const g = x.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "#ffbd45"); g.addColorStop(0.4, "#fca42a"); g.addColorStop(1, "#ec7a0c");
@@ -673,7 +684,7 @@ function juiceLiquidTex() {
 }
 
 function orangeSliceTex() {
-  return canvasTex(256, 256, (x) => {
+  return canvasTex("orangeSliceTex", 256, 256, (x) => {
     const r = rng(61), c = 128, R = 127;
     x.fillStyle = "#ee7410"; x.beginPath(); x.arc(c, c, R, 0, TAU); x.fill();
     for (let i = 0; i < 140; i++) {

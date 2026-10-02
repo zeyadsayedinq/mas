@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link } from "../router";
 import { AtSign } from "lucide-react";
 import Sparkle from "./Sparkle";
 import { CONFIRMED, CONTACT_DETAILS, SOCIAL, live } from "../config";
 import { useLang } from "../i18n";
 import { track } from "../track";
-import monogram from "../assets/brand/covy-monogram-greige.png";
+import monogram from "../assets/brand/covy-monogram-greige.webp";
 import type { Brand } from "../brands";
 
 /**

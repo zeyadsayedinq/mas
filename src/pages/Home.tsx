@@ -1,3 +1,4 @@
+import { useSleepOffscreen } from "../hooks/useSleepOffscreen";
 import { useEffect, useState } from "react";
 import Nav from "../components/Nav";
 import MasHero from "../components/MasHero";
@@ -24,6 +25,7 @@ import "../styles/mas.css";
  * interactive parts are the ones that help a visitor find their engagement.
  */
 export default function Home() {
+  useSleepOffscreen();
   const brand = useBrand("mas");
 
   // The services section inverts onto the dark ground, so the fixed nav has to

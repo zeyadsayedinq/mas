@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import type { Kind } from "./models";
 import {
-  addLights, animatePiece, blobTexture, bounce, disposeScene, fitCamera, makePiece, makeRenderer,
+  addLights, animatePiece, blobTexture, bounce, breathe, disposeScene, fitCamera, makeGovernor, makePiece, makeRenderer,
   pieceCorners, puffTexture, type Piece,
 } from "./kit";
 
@@ -61,12 +61,13 @@ export default function StoryStage({ accent, getStage, flow, fallback, label, cu
     if (!el) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setFailed(true); return; }
 
-    let built = false, cancelled = false;
+    let built = false, cancelled = false, gen = 0;
     let teardown: (() => void) | null = null;
 
-    function build() {
+    async function build() {
       if (built || cancelled) return;
       built = true;
+      const my = ++gen;
       const made = makeRenderer(el!);
       if (!made) { setFailed(true); return; }
       const { renderer, canvas } = made;
@@ -79,18 +80,28 @@ export default function StoryStage({ accent, getStage, flow, fallback, label, cu
       const blob = blobTexture();
       const puff = puffTexture();
 
-      const groups: Group[] = STAGES.map((st, gi) => {
+      // One piece per idle slice, so building the three stages never blocks the page.
+      const groups: Group[] = [];
+      for (let gi = 0; gi < STAGES.length; gi++) {
         const g = new THREE.Group();
-        const pieces = st.pieces.map((d, i) => {
+        const pieces: Piece[] = [];
+        scene.add(g);
+        for (let i = 0; i < STAGES[gi].pieces.length; i++) {
+          const d = STAGES[gi].pieces[i];
           const p = makePiece(d.kind, accent, blob, puff, gi * 2 + i * 1.3);
           p.root.position.set(d.x, 0, d.z);
           p.root.scale.setScalar(d.s);
           g.add(p.root);
-          return p;
-        });
-        scene.add(g);
-        return { g, pieces, yaw: 0, yawV: 0 };
-      });
+          pieces.push(p);
+          await breathe();
+          if (cancelled || my !== gen) {
+            disposeScene(scene); blob.dispose(); puff.dispose();
+            renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
+            return;
+          }
+        }
+        groups.push({ g, pieces, yaw: 0, yawV: 0 });
+      }
 
       // One camera fit per stage, computed with that stage at the origin.
       let fits: { pos: THREE.Vector3; target: THREE.Vector3 }[] = [];
@@ -168,10 +179,15 @@ export default function StoryStage({ accent, getStage, flow, fallback, label, cu
 
       // Render loop, only while on screen.
       let raf = 0, running = false, last = performance.now(), t = 0;
+      const govern = makeGovernor(renderer, layout);
+      // Shaders compile in the background, so the first frame never stalls the page.
+      const ready: Promise<unknown> = renderer.compileAsync ? renderer.compileAsync(scene, camera).catch(() => {}) : Promise.resolve();
+      let wanted = false;
       let landed = -1;
       const timers: number[] = [];
       const camPos = new THREE.Vector3(), camTarget = new THREE.Vector3(), right = new THREE.Vector3();
       function frame(now: number) {
+        govern(now - last);
         const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
         ptr.x += (ptr.tx - ptr.x) * 0.06; ptr.y += (ptr.ty - ptr.y) * 0.06;
         const s = Math.max(0, Math.min(2, read.current()));
@@ -217,8 +233,11 @@ export default function StoryStage({ accent, getStage, flow, fallback, label, cu
         renderer.render(scene, camera);
         if (running) raf = requestAnimationFrame(frame);
       }
-      const start = () => { if (!running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); } };
-      const stop = () => { running = false; cancelAnimationFrame(raf); };
+      const start = () => {
+        wanted = true;
+        ready.then(() => { if (wanted && !running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); } });
+      };
+      const stop = () => { wanted = false; running = false; cancelAnimationFrame(raf); };
       const playIO = new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? start() : stop()), { threshold: 0.01 });
       playIO.observe(el!);
       const onVis = () => {
@@ -245,12 +264,25 @@ export default function StoryStage({ accent, getStage, flow, fallback, label, cu
       };
     }
 
+    // Built when the stage is getting close, and handed back when it is far
+    // away, so the GPU memory goes to whatever is on screen.
     const warmIO = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { build(); warmIO.disconnect(); } },
+      ([e]) => { if (e.isIntersecting) void build(); },
       { rootMargin: "700px 0px" },
     );
     warmIO.observe(el);
-    return () => { cancelled = true; warmIO.disconnect(); teardown?.(); };
+    const farIO = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting || !built) return;
+        teardown?.();
+        teardown = null;
+        built = false;
+        gen++;
+      },
+      { rootMargin: "250% 0px" },
+    );
+    farIO.observe(el);
+    return () => { cancelled = true; warmIO.disconnect(); farIO.disconnect(); teardown?.(); };
   }, [accent, cursorLabel]);
 
   if (failed) return <>{fallback}</>;

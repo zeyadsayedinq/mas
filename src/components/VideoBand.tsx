@@ -67,16 +67,17 @@ export default function VideoBand({ src, poster, children, align = "bottom", cla
 
   return (
     <section ref={box} id={id} className={`relative isolate overflow-hidden bg-black text-white ${className}`}>
-      <div ref={media} aria-hidden className="absolute inset-0 -z-20" style={{ transform: "scale(1.06)", willChange: "transform" }}>
-      <img src={poster} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition }} loading="lazy" />
-      {!still && (
+      <div ref={media} aria-hidden className="absolute inset-0 -z-20" style={{ transform: "scale(1.06)" }}>
+      <img src={poster} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition }} loading="lazy" decoding="async" />
+      {/* The video element only exists once the band is close, so nothing is fetched for footage nobody has scrolled to. */}
+      {!still && near && (
         <video
           ref={vid}
           className="absolute inset-0 h-full w-full object-cover"
           style={{ objectPosition }}
-          src={near ? src : undefined}
-          poster={poster}
+          src={src}
           muted
+          autoPlay
           loop
           playsInline
           preload="none"

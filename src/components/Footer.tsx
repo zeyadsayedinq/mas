@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../router";
 import { AtSign } from "lucide-react";
 import type { Brand } from "../brands";
 import { CONFIRMED, CONTACT_DETAILS, SOCIAL, live } from "../config";

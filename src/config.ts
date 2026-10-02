@@ -97,12 +97,6 @@ export const SOCIAL = {
   covy: { instagram: "" },
 };
 
-/** Radius of the cursor spotlight on the dark pages, in pixels. */
-export const SPOTLIGHT_R = 260;
-
-/** Radius of the smaller spotlight used on the brand split panels. */
-export const PANEL_SPOTLIGHT_R = 300;
-
 /**
  * The reservation form is a front end mockup. Nothing is stored.
  *

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import type { Kind } from "./models";
 import {
-  addLights, animatePiece, blobTexture, bounce, disposeScene, fitCamera, makePiece, makeRenderer,
+  addLights, animatePiece, blobTexture, bounce, breathe, disposeScene, fitCamera, makeGovernor, makePiece, makeRenderer,
   pieceCorners, puffTexture, toScreen, type Piece,
 } from "./kit";
 
@@ -64,11 +64,13 @@ export default function Scene3D({ kinds, accent, mode, onPick, labels, fallback,
 
     let built = false;
     let cancelled = false;
+    let gen = 0;
     let teardown: (() => void) | null = null;
 
-    function build() {
+    async function build() {
       if (built || cancelled) return;
       built = true;
+      const my = ++gen;
       const made = makeRenderer(el!);
       if (!made) { setFailed(true); return; }
       const { renderer, canvas } = made;
@@ -79,11 +81,19 @@ export default function Scene3D({ kinds, accent, mode, onPick, labels, fallback,
       const blob = blobTexture();
       const puff = puffTexture();
 
-      const items: Piece[] = kinds.map((k, i) => {
-        const p = makePiece(k, accent, blob, puff, i * 1.3);
+      // One piece per idle slice, so building five models never blocks the page.
+      const items: Piece[] = [];
+      for (let i = 0; i < kinds.length; i++) {
+        const p = makePiece(kinds[i], accent, blob, puff, i * 1.3);
         scene.add(p.root);
-        return p;
-      });
+        items.push(p);
+        await breathe();
+        if (cancelled || my !== gen) {
+          disposeScene(scene); blob.dispose(); puff.dispose();
+          renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
+          return;
+        }
+      }
       const byKind = (k: Kind) => items.find((p) => p.kind === k);
 
       let visible: Piece[] = items;
@@ -202,9 +212,14 @@ export default function Scene3D({ kinds, accent, mode, onPick, labels, fallback,
       // Render loop, only while on screen. Pieces pop in, staggered, the first
       // time the stage is seen.
       let raf = 0, running = false, last = performance.now(), t = 0;
+      const govern = makeGovernor(renderer, layout);
+      // Shaders compile in the background, so the first frame never stalls the page.
+      const ready: Promise<unknown> = renderer.compileAsync ? renderer.compileAsync(scene, camera).catch(() => {}) : Promise.resolve();
+      let wanted = false;
       let introAt = -1;
       const tmp = new THREE.Vector3();
       function frame(now: number) {
+        govern(now - last);
         const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
         if (introAt < 0) introAt = t;
         ptr.x += (ptr.tx - ptr.x) * 0.06; ptr.y += (ptr.ty - ptr.y) * 0.06;
@@ -237,8 +252,11 @@ export default function Scene3D({ kinds, accent, mode, onPick, labels, fallback,
         renderer.render(scene, camera);
         if (running) raf = requestAnimationFrame(frame);
       }
-      const start = () => { if (!running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); } };
-      const stop = () => { running = false; cancelAnimationFrame(raf); };
+      const start = () => {
+        wanted = true;
+        ready.then(() => { if (wanted && !running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); } });
+      };
+      const stop = () => { wanted = false; running = false; cancelAnimationFrame(raf); };
       const playIO = new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? start() : stop()), { threshold: 0.02 });
       playIO.observe(el!);
       const onVis = () => {
@@ -263,15 +281,29 @@ export default function Scene3D({ kinds, accent, mode, onPick, labels, fallback,
       };
     }
 
+    // Built when the stage is getting close, and handed back when it is far
+    // behind: on a long page the GPU memory goes to whatever is on screen.
     const warmIO = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { build(); warmIO.disconnect(); } },
+      ([e]) => { if (e.isIntersecting) void build(); },
       { rootMargin: "600px 0px" },
     );
     warmIO.observe(el);
+    const farIO = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting || !built) return;
+        teardown?.();
+        teardown = null;
+        built = false;
+        gen++;
+      },
+      { rootMargin: "250% 0px" },
+    );
+    farIO.observe(el);
 
     return () => {
       cancelled = true;
       warmIO.disconnect();
+      farIO.disconnect();
       teardown?.();
     };
   }, [kinds, accent, mode]);

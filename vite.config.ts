@@ -10,10 +10,42 @@ import { PAGES, jsonLd } from './src/seo.ts'
  * share image and structured data already in the head. Hosts serve
  * /aroma/index.html for /aroma before falling back to the single-page app.
  */
+/** Which fonts the first screen of each page sets, so they can start downloading with the HTML. */
+const FONTS: Record<string, { en: string[]; ar: string[] }> = {
+  mas: { en: ['archivo-latin-wght-normal'], ar: ['ibm-plex-sans-arabic-arabic-400-normal', 'ibm-plex-sans-arabic-arabic-600-normal'] },
+  aroma: { en: ['fraunces-latin-wght-normal', 'caveat-latin-700-normal', 'dm-sans-latin-wght-normal'], ar: ['almarai-arabic-400-normal', 'almarai-arabic-700-normal'] },
+  covy: { en: ['bodoni-moda-latin-wght-normal', 'bodoni-moda-latin-wght-italic', 'jost-latin-wght-normal'], ar: ['amiri-arabic-400-normal', 'ibm-plex-sans-arabic-arabic-400-normal'] },
+}
+/** The page module behind each route, and the lazy modules its first screen needs straight away. */
+const ENTRY: Record<string, string[]> = {
+  mas: ['pages/Home'],
+  aroma: ['pages/AromaPage', 'three/Scene3D'],
+  covy: ['pages/BrandPage'],
+}
+
 function staticPages(): Plugin {
+  const fonts = new Map<string, string>()
+  const chunkOf = new Map<string, string>()
+  const importsOf = new Map<string, string[]>()
+  const cssOf = new Map<string, string[]>()
   return {
     name: 'mas-static-pages',
     apply: 'build',
+    writeBundle(_options, bundle) {
+      for (const [file, item] of Object.entries(bundle)) {
+        if (item.type === 'asset') {
+          const m = /assets\/(.+)-[\w-]{8}\.woff2$/.exec(file)
+          if (m) fonts.set(m[1], '/' + file)
+        } else {
+          importsOf.set(file, item.imports)
+          cssOf.set(file, [...((item as { viteMetadata?: { importedCss?: Set<string> } }).viteMetadata?.importedCss ?? [])])
+          for (const id of item.moduleIds) {
+            const m = /src\/((?:pages|three)\/[\w]+|ar\.core|menu\.ar)\.tsx?$/.exec(id)
+            if (m) chunkOf.set(m[1], file)
+          }
+        }
+      }
+    },
     closeBundle() {
       const dist = join(process.cwd(), 'dist')
       const site = (
@@ -42,7 +74,26 @@ function staticPages(): Plugin {
           site ? `<link rel="alternate" hreflang="${p.lang === 'ar' ? 'en' : 'ar'}" href="${abs(p.alternate)}" />` : '',
           `<script type="application/ld+json" id="ld-json">${JSON.stringify(jsonLd(p, site))}</script>`,
         ].filter(Boolean).join('\n    ')
+        const base = p.path.replace(/^\/ar(?=\/|$)/, '') || '/'
+        const key = base.startsWith('/aroma') ? 'aroma' : base.startsWith('/covy') ? 'covy' : 'mas'
+        const mods = new Set<string>()
+        const walk = (f?: string) => {
+          if (!f || mods.has(f)) return
+          mods.add(f)
+          for (const i of importsOf.get(f) ?? []) walk(i)
+        }
+        for (const e of ENTRY[key]) walk(chunkOf.get(e))
+        if (p.lang === 'ar') {
+          walk(chunkOf.get('ar.core'))
+          if (key === 'aroma') walk(chunkOf.get('menu.ar'))
+        }
+        const preload = [
+          ...FONTS[key][p.lang].map((f) => fonts.get(f)).filter(Boolean).map((href) => `<link rel="preload" as="font" type="font/woff2" crossorigin href="${href}" />`),
+          ...[...new Set([...mods].flatMap((f) => cssOf.get(f) ?? []))].filter((f) => !template.includes(f)).map((f) => `<link rel="stylesheet" crossorigin href="/${f}" />`),
+          ...[...mods].filter((f) => !template.includes(f)).map((f) => `<link rel="modulepreload" crossorigin href="/${f}" />`),
+        ].join('\n    ')
         const html = template
+          .replace('</head>', `  ${preload}\n  </head>`)
           .replace(/<title>.*?<\/title>/s, head)
           .replace(/<html lang="[^"]*"/, `<html lang="${p.lang}" dir="${p.lang === 'ar' ? 'rtl' : 'ltr'}"`)
           .replace(/<meta name="theme-color" content="[^"]*"/, `<meta name="theme-color" content="${p.themeColor}"`)

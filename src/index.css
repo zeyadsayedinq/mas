@@ -3,33 +3,28 @@
 .font-playfair { font-family: 'Fraunces', Georgia, serif; font-style: italic; }
 
 /* ---------------------------------------------------------------------------
-   MAS Egypt brand faces, self-hosted from the supplied asset pack.
-   All five are SIL Open Font License, which is why they ship inside the repo
-   rather than being pulled from a CDN at runtime.
+   MAS Egypt faces. All SIL Open Font License and self-hosted. Each file is
+   cut down to the weights and characters the site actually sets, which is
+   what keeps the font payload small.
 
-   Cormorant Garamond  display  headlines, section heads
-   Newsreader          text     running copy
-   Archivo             utility  labels, tags, the descriptor lockup
-   Aref Ruqaa/Almarai  Arabic   display / text
+   Archivo             the group page
+   Aref Ruqaa/Almarai  Arabic display / text
 --------------------------------------------------------------------------- */
 @font-face {
-  font-family: 'Cormorant Garamond';
-  src: url('./assets/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2');
-  font-weight: 300 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Newsreader';
-  src: url('./assets/fonts/newsreader-latin-opsz-normal.woff2') format('woff2');
-  font-weight: 200 800; font-style: normal; font-display: swap;
-}
-@font-face {
   font-family: 'Archivo';
-  src: url('./assets/fonts/archivo-latin-wdth-normal.woff2') format('woff2');
-  font-weight: 100 900; font-style: normal; font-display: swap;
+  src: url('./assets/fonts/archivo-latin-wght-normal.woff2') format('woff2');
+  font-weight: 400 800; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Aref Ruqaa';
   src: url('./assets/fonts/aref-ruqaa-arabic-700-normal.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+/* Just the letters of the three brand names, for the Arabic name lockups on
+   the English pages, so they do not pull in the whole face. */
+@font-face {
+  font-family: 'Aref Ruqaa Names';
+  src: url('./assets/fonts/aref-ruqaa-names.woff2') format('woff2');
   font-weight: 700; font-style: normal; font-display: swap;
 }
 @font-face {
@@ -38,19 +33,13 @@
   font-weight: 400; font-style: normal; font-display: swap;
 }
 
-.font-cormorant { font-family: 'Cormorant Garamond', Georgia, serif; }
-.font-newsreader { font-family: 'Newsreader', Georgia, serif; }
-.font-archivo { font-family: 'Archivo', 'Inter', sans-serif; }
-.font-ruqaa { font-family: 'Aref Ruqaa', 'Almarai', serif; }
+.font-archivo { font-family: 'Archivo', system-ui, sans-serif; }
+.font-ruqaa { font-family: 'Aref Ruqaa Names', 'Aref Ruqaa', 'Almarai', serif; }
 .font-almarai { font-family: 'Almarai', sans-serif; }
 
-/* The group page runs on Archivo, the plainest face in the MAS pack. The
-   old-style pair stays available for print and for pull quotes. */
-.mas-type, .mas-type * { font-family: 'Archivo', 'Inter', sans-serif; }
-.mas-type .font-newsreader { font-family: 'Newsreader', Georgia, serif; }
-.mas-type .font-cormorant { font-family: 'Cormorant Garamond', Georgia, serif; }
-.mas-type .font-archivo { font-family: 'Archivo', 'Inter', sans-serif; }
-.mas-type .font-ruqaa { font-family: 'Aref Ruqaa', 'Almarai', serif; }
+.mas-type, .mas-type * { font-family: 'Archivo', system-ui, sans-serif; }
+.mas-type .font-archivo { font-family: 'Archivo', system-ui, sans-serif; }
+.mas-type .font-ruqaa { font-family: 'Aref Ruqaa Names', 'Aref Ruqaa', 'Almarai', serif; }
 
 @tailwind base;
 @tailwind components;
@@ -158,12 +147,12 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
    the identity sheet; Aroma borrows the same idea with softer faces, Fraunces
    for headlines and DM Sans for reading. All OFL, all self-hosted.
 --------------------------------------------------------------------------- */
-@font-face { font-family:'Bodoni Moda'; src:url('./assets/fonts/bodoni-moda-latin-wght-normal.woff2') format('woff2'); font-weight:400 900; font-style:normal; font-display:swap; }
-@font-face { font-family:'Bodoni Moda'; src:url('./assets/fonts/bodoni-moda-latin-wght-italic.woff2') format('woff2'); font-weight:400 900; font-style:italic; font-display:swap; }
-@font-face { font-family:'Jost'; src:url('./assets/fonts/jost-latin-wght-normal.woff2') format('woff2'); font-weight:100 900; font-style:normal; font-display:swap; }
-@font-face { font-family:'DM Sans'; src:url('./assets/fonts/dm-sans-latin-wght-normal.woff2') format('woff2'); font-weight:100 1000; font-style:normal; font-display:swap; }
-@font-face { font-family:'Fraunces'; src:url('./assets/fonts/fraunces-latin-soft-normal.woff2') format('woff2'); font-weight:100 900; font-style:normal; font-display:swap; }
-@font-face { font-family:'Fraunces'; src:url('./assets/fonts/fraunces-latin-soft-italic.woff2') format('woff2'); font-weight:100 900; font-style:italic; font-display:swap; }
+@font-face { font-family:'Bodoni Moda'; src:url('./assets/fonts/bodoni-moda-latin-wght-normal.woff2') format('woff2'); font-weight:400 600; font-style:normal; font-display:swap; }
+@font-face { font-family:'Bodoni Moda'; src:url('./assets/fonts/bodoni-moda-latin-wght-italic.woff2') format('woff2'); font-weight:400 600; font-style:italic; font-display:swap; }
+@font-face { font-family:'Jost'; src:url('./assets/fonts/jost-latin-wght-normal.woff2') format('woff2'); font-weight:400 600; font-style:normal; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('./assets/fonts/dm-sans-latin-wght-normal.woff2') format('woff2'); font-weight:400 700; font-style:normal; font-display:swap; }
+@font-face { font-family:'Fraunces'; src:url('./assets/fonts/fraunces-latin-wght-normal.woff2') format('woff2'); font-weight:400 600; font-style:normal; font-display:swap; }
+@font-face { font-family:'Fraunces'; src:url('./assets/fonts/fraunces-latin-wght-italic.woff2') format('woff2'); font-weight:400 500; font-style:italic; font-display:swap; }
 @font-face { font-family:'Caveat'; src:url('./assets/fonts/caveat-latin-700-normal.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
 
 .aroma-type, .aroma-type * { font-family:'DM Sans','Inter',sans-serif; }
@@ -173,7 +162,7 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
 /* One heading formula for Aroma: Fraunces, with a Caveat accent line. Spans inside a heading inherit Fraunces instead of dropping to the body face. */
 .aroma-type h1 *, .aroma-type h2 *, .aroma-type h3 * { font-family:inherit; }
 
-.covy-type, .covy-type * { font-family:'Jost','DM Sans',sans-serif; }
+.covy-type, .covy-type * { font-family:'Jost',system-ui,sans-serif; }
 .covy-type h1, .covy-type h2, .covy-type h3 { font-family:'Bodoni Moda',Georgia,serif; font-weight:400; letter-spacing:-0.01em; }
 .covy-type h1 em, .covy-type h2 em, .covy-type h3 em { font-style:italic; }
 .covy-type .font-almarai, .covy-type .font-almarai * { font-family:'Almarai',sans-serif; }
@@ -226,9 +215,7 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
 @font-face { font-family:'IBM Plex Sans Arabic'; src:url('./assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2') format('woff2'); font-weight:300 500; font-display:swap; unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF; }
 @font-face { font-family:'IBM Plex Sans Arabic'; src:url('./assets/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2') format('woff2'); font-weight:600 800; font-display:swap; unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF; }
 @font-face { font-family:'Almarai'; src:url('./assets/fonts/almarai-arabic-700-normal.woff2') format('woff2'); font-weight:600 800; font-display:swap; }
-@font-face { font-family:'Amiri'; src:url('./assets/fonts/amiri-arabic-400-normal.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
-@font-face { font-family:'Amiri'; src:url('./assets/fonts/amiri-arabic-400-italic.woff2') format('woff2'); font-weight:400; font-style:italic; font-display:swap; }
-@font-face { font-family:'Amiri'; src:url('./assets/fonts/amiri-arabic-700-normal.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'Amiri'; src:url('./assets/fonts/amiri-arabic-400-normal.woff2') format('woff2'); font-weight:400 700; font-display:swap; }
 
 [dir="rtl"] body { letter-spacing:0; }
 [dir="rtl"] .mas-type, [dir="rtl"] .mas-type * { font-family:'IBM Plex Sans Arabic','Archivo',sans-serif !important; letter-spacing:0 !important; }
@@ -239,7 +226,7 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
 [dir="rtl"] .covy-type, [dir="rtl"] .covy-type * { font-family:'IBM Plex Sans Arabic','Jost',sans-serif !important; letter-spacing:0 !important; }
 [dir="rtl"] .covy-type h1, [dir="rtl"] .covy-type h2, [dir="rtl"] .covy-type h3,
 [dir="rtl"] .covy-type h1 *, [dir="rtl"] .covy-type h2 *, [dir="rtl"] .covy-type h3 *,
-[dir="rtl"] .covy-type .font-playfair { font-family:'Amiri','Bodoni Moda',serif !important; line-height:1.35; }
+[dir="rtl"] .covy-type .font-playfair { font-family:'Amiri','Bodoni Moda',serif !important; line-height:1.35; font-style:normal; }
 [dir="rtl"] .uppercase { text-transform:none; }
 [dir="rtl"] .rtl-flip { transform:scaleX(-1); }
 /* Arabic never gets negative tracking or the tight Latin leading. */
@@ -262,3 +249,11 @@ h1, h2, h3, p, li, span { overflow-wrap:break-word; }
 [dir="rtl"] .kinetic-rise .kw { transform-origin:100% 100%; transform:translateY(0.7em) rotate(-6deg); }
 [dir="rtl"] .kinetic.is-on .kw { transform:none; }
 @media (prefers-reduced-motion: reduce) { .kinetic .kw { transform:none !important; opacity:1 !important; transition:none; } }
+
+/* Looping decoration is switched off while its section is off screen
+   (hooks/useSleepOffscreen.ts). Entrance animations are not in this list, so
+   nothing replays when a section comes back. */
+.is-asleep :is(.fb-float, .fb-steam, .marquee-track, .covy-drift, .covy-drift-b, .covy-twinkle, .covy-sweep, .covy-breathe,
+  .aro-taphint, .aro-pill-dot, .ac-pin-bob, .ac-pulse, .cv-seal-pulse, .cv-caret,
+  .ca-flame, .ca-halo, .ca-breathe, .ca-steam, .ca-glint, .ca-twinkle),
+.is-asleep .cv-foil::before { animation: none !important; }

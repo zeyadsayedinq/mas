@@ -1,3 +1,4 @@
+import { useSleepOffscreen } from "../hooks/useSleepOffscreen";
 import { useEffect, useMemo } from "react";
 import Nav from "../components/Nav";
 import CovyHero from "../components/CovyHero";
@@ -14,7 +15,7 @@ import SparkleTrail from "../components/SparkleTrail";
 import { useBrand } from "../localize";
 import { useLang } from "../i18n";
 import { BRANDS, type Brand } from "../brands";
-import greigeWordmark from "../assets/brand/covy-wordmark-greige.png";
+import greigeWordmark from "../assets/brand/covy-wordmark-greige.webp";
 import "../styles/covy.css";
 
 interface BrandPageProps {
@@ -106,6 +107,7 @@ function greigeBrand(base: Brand): Brand {
 }
 
 export default function BrandPage({ brandKey }: BrandPageProps) {
+  useSleepOffscreen();
   const base = useBrand(brandKey);
   const { tr } = useLang();
   const brand = useMemo(() => navyBrand(base, tr), [base, tr]);

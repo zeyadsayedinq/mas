@@ -27,7 +27,7 @@ function Cta({ brand, to, children }: { brand: Brand; to: string; children: stri
 export function ReelIntro({ brand }: { brand: Brand }) {
   const { tr } = useLang();
   return (
-    <VideoBand src="/video/aroma-reel.mp4" poster="/video/aroma-reel.jpg" className="min-h-[80svh] flex items-end">
+    <VideoBand src="/video/aroma-reel.mp4" poster="/video/aroma-reel.webp" className="min-h-[80svh] flex items-end">
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-10 md:px-14 pb-14 sm:pb-20 pt-40">
         <p className="text-[11px] uppercase tracking-[0.24em] font-semibold mb-4" style={{ color: "#C8DA9E" }}>
           {tr(`Inside ${brand.name}`, `جوّه ${brand.name}`)}
@@ -50,7 +50,7 @@ export function ReelIntro({ brand }: { brand: Brand }) {
 export function ReelSpace({ brand }: { brand: Brand }) {
   const { tr } = useLang();
   return (
-    <VideoBand src="/video/aroma-space.mp4" poster="/video/aroma-space.jpg" align="center" className="min-h-[70svh] flex items-center">
+    <VideoBand src="/video/aroma-space.mp4" poster="/video/aroma-space.webp" align="center" className="min-h-[70svh] flex items-center">
       <div className="mx-auto w-full max-w-3xl px-5 sm:px-10 py-24 text-center">
         <h2 className="text-4xl sm:text-6xl leading-[1.05]">
           <Kinetic text={tr("Come for the coffee,", "تعالى عشان القهوة،")} className="block" />
@@ -67,7 +67,7 @@ export function ReelSpace({ brand }: { brand: Brand }) {
 export function ReelTable({ brand }: { brand: Brand }) {
   const { tr } = useLang();
   return (
-    <VideoBand src="/video/aroma-table.mp4" poster="/video/aroma-table.jpg" className="min-h-[80svh] flex items-end">
+    <VideoBand src="/video/aroma-table.mp4" poster="/video/aroma-table.webp" className="min-h-[80svh] flex items-end">
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-10 md:px-14 pb-14 sm:pb-20 pt-40 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
         <h2 className="text-4xl sm:text-6xl lg:text-7xl leading-[1.02] max-w-2xl">
           <Kinetic text={tr("Saved a table?", "حجزت ترابيزة؟")} className="block" variant="curtain" />

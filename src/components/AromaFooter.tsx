@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../router";
 import { AtSign, ArrowUpRight, Phone, Mail, MessageCircle, Users } from "lucide-react";
 import { OpenNowBadge, directionsUrl } from "./Branches";
 import { whatsappUrl } from "../branches";

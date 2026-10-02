@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "../router";
 import { pageFor, jsonLd } from "../seo";
 import { SITE_URL } from "../config";
 

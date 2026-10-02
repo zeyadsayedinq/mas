@@ -1,12 +1,15 @@
-import { useRef, useState, type CSSProperties } from "react";
-import { Minus, Plus, ArrowRight, RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Minus, Plus, ArrowRight, RotateCcw, Check } from "lucide-react";
 import Reveal from "./Reveal";
 import Kinetic from "./Kinetic";
 import Magnetic from "./Magnetic";
 import Sparkle from "./Sparkle";
 import { useLang } from "../i18n";
 import { track } from "../track";
-import monogram from "../assets/brand/covy-monogram-greige.png";
+import monogram from "../assets/brand/covy-monogram-greige.webp";
+import InviteActions from "./InviteActions";
+import { dayLabel, inviteUrl, isoDay, readInvite, whatsappLink, type InviteData } from "../invite/core";
+import { COVY_ARRIVALS, covyCopy, drawCovyCard, type CovyMood } from "../invite/covyCard";
 import type { Brand } from "../brands";
 import "../styles/covy.css";
 
@@ -24,8 +27,8 @@ export function sendToCovy(message: string) {
   document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-type Mood = "quiet" | "friends" | "late" | "private";
-const ARRIVALS = ["20:00", "21:00", "22:00", "23:00", "late"] as const;
+type Mood = CovyMood;
+const ARRIVALS = COVY_ARRIVALS;
 type Arrival = (typeof ARRIVALS)[number];
 
 const MAX_GUESTS = 20;
@@ -41,11 +44,14 @@ const BURST = [
 ];
 
 /**
- * "Plan your evening": pick a mood, a party size and a time, and COVY writes
- * you a card. The card flips from its cover (the monogram) to the written
- * side, and can be sent straight into the enquiry form. Every line on it is
- * built from what COVY actually is: a lounge with a late kitchen, a full bar,
- * quiet rooms, and private hire.
+ * "Plan your evening": pick a mood, a night, a party size and a time, add a
+ * name, and COVY writes an invitation. The card flips from its cover (the
+ * monogram) to the written side. It can be sent to anyone as an image
+ * through the phone's share menu, sent on WhatsApp, saved as a picture, or
+ * copied as a link; the person who opens the link sees the same card. It can
+ * also go straight into the enquiry form to hold the table. Every line on it
+ * is built from what COVY actually is: a lounge with a late kitchen, a full
+ * bar, quiet rooms, and private hire.
  */
 export default function CovyEvening({ brand }: { brand: Brand }) {
   const ui = brand.ui;
@@ -54,7 +60,40 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
   const [guests, setGuests] = useState(2);
   const [arrival, setArrival] = useState<Arrival | null>(null);
   const [open, setOpen] = useState(false);
+  const [day, setDay] = useState(() => isoDay(0));
+  const [to, setTo] = useState("");
+  const [from, setFrom] = useState("");
+  const [image, setImage] = useState<Promise<Blob> | null>(null);
+  /** Someone opened a link they were sent: show them their invitation first. */
+  const [received, setReceived] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const data: InviteData | null = useMemo(
+    () => (mood && arrival ? { b: "covy", m: mood, g: guests, a: arrival, d: day, to: to.trim() || undefined, from: from.trim() || undefined } : null),
+    [mood, arrival, guests, day, to, from],
+  );
+  const copy = useMemo(() => (data ? covyCopy(data, ar) : null), [data, ar]);
+
+  // An invitation link opens straight onto its card.
+  useEffect(() => {
+    const inv = readInvite("covy");
+    if (!inv) return;
+    setMood(inv.m as Mood);
+    setGuests(inv.g ?? 2);
+    setArrival((ARRIVALS as readonly string[]).includes(inv.a ?? "") ? (inv.a as Arrival) : "21:00");
+    if (inv.d) setDay(inv.d);
+    setTo(inv.to ?? "");
+    setFrom(inv.from ?? "");
+    setReceived(true);
+    setImage(drawCovyCard(inv, ar));
+    track("invite_open", { brand: "covy" });
+    const t = window.setTimeout(() => {
+      setOpen(true);
+      document.getElementById("evening")?.scrollIntoView({ block: "start" });
+    }, 500);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const moods: { key: Mood; label: string }[] = [
     { key: "quiet", label: tr("Quiet table for two", "طاولة هادئة لشخصين") },
@@ -74,35 +113,9 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
   const guestWord = (n: number) =>
     ar ? (n === 1 ? "ضيف واحد" : n === 2 ? "ضيفان" : n <= 10 ? `${n} ضيوف` : `${n} ضيفًا`) : n === 1 ? "1 guest" : `${n} guests`;
 
-  // The card, written from the choices.
-  const title = (() => {
-    switch (mood) {
-      case "quiet":
-        return guests === 2 ? tr("A quiet table for two", "طاولة هادئة لشخصين") : tr(`A quiet table for ${guests}`, `طاولة هادئة لـ${guests}`);
-      case "friends":
-        return tr("An evening with friends", "سهرة مع الأصدقاء");
-      case "late":
-        return tr("A late dinner", "عشاء متأخر");
-      case "private":
-        return tr("A private evening", "سهرة خاصة");
-      default:
-        return "";
-    }
-  })();
-
-  const lines: string[] = [];
-  if (mood === "quiet") lines.push(tr("Low light, and a room quiet enough to hear each other.", "إضاءة خافتة، ومكان هادئ بما يكفي ليسمع كلٌّ منكما الآخر."));
-  if (mood === "friends")
-    lines.push(tr(`A table for ${guests}, and a full bar that keeps up with the conversation.`, `طاولة لـ${guests}، وبار كامل يواكب الحديث.`));
-  if (mood === "late") lines.push(tr("Dinner from the late kitchen, with nobody watching the clock.", "عشاء من مطبخ آخر الليل، ولا أحد ينظر إلى الساعة."));
-  if (mood === "private")
-    lines.push(tr("One of the quiet rooms, kept for your guests. The rest we plan with you.", "إحدى الغرف الهادئة، محجوزة لضيوفك. والباقي نرتّبه معك."));
-  if (arrival === "late") lines.push(tr("Arriving late. The kitchen will still be open.", "الوصول متأخرًا. سيبقى المطبخ مفتوحًا."));
-  else if (arrival === "23:00") lines.push(tr("Arriving around 23:00, when the room is at its best.", "الوصول نحو 23:00، حين يكون المكان في أجمل حالاته."));
-  else if (arrival === "20:00") lines.push(tr("Arriving around 20:00, with the whole evening ahead.", "الوصول نحو 20:00، والسهرة كلها أمامكم."));
-  else if (arrival) lines.push(tr(`Arriving around ${arrival}. Nobody rushes the last table.`, `الوصول نحو ${arrival}. ولا أحد يستعجل آخر طاولة.`));
-  if (guests >= 9 && mood !== "private")
-    lines.push(tr("A bigger table. Let us know ahead so it is ready.", "طاولة أكبر. أخبرنا مسبقًا لتكون جاهزة."));
+  // The card, written from the choices (the same writer draws the image).
+  const title = copy?.title ?? "";
+  const lines = copy?.lines ?? [];
 
   const ready = !!mood && !!arrival;
 
@@ -113,6 +126,8 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
       setOpen(false);
       window.setTimeout(() => setOpen(true), 700);
     } else setOpen(true);
+    // Draw the image now, so sending it later is instant.
+    if (data) setImage(drawCovyCard(data, ar));
     track("evening_card", { mood: mood!, guests, arrival: arrival! });
     // On a phone the card sits below the choices: bring it up.
     const el = cardRef.current;
@@ -127,12 +142,33 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
 
   const reset = () => {
     setOpen(false);
+    setReceived(false);
+    setImage(null);
+    if (window.location.hash.includes("invite=")) window.history.replaceState(null, "", window.location.pathname + window.location.search);
     window.setTimeout(() => {
       setMood(null);
       setArrival(null);
       setGuests(2);
+      setDay(isoDay(0));
+      setTo("");
+      setFrom("");
     }, 450);
   };
+
+  // Any change after the card is written turns it back over, so what is sent always matches what is shown.
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    if (received) return;
+    setOpen(false);
+    setImage(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  const dayText = dayLabel(day, ar);
+  const yesText = from
+    ? tr(`I'm in, ${from}. COVY, ${dayText}${arrival && arrival !== "late" ? ` at ${arrival}` : ""}.`, `موافق يا ${from}. كوفي، ${dayText}${arrival && arrival !== "late" ? ` الساعة ${arrival}` : ""}.`)
+    : tr(`I'm in. COVY, ${dayText}${arrival && arrival !== "late" ? ` at ${arrival}` : ""}.`, `موافق. كوفي، ${dayText}${arrival && arrival !== "late" ? ` الساعة ${arrival}` : ""}.`);
 
   const send = () => {
     const message = [
@@ -141,7 +177,7 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
       "",
       `${tr("Guests", "عدد الضيوف")}: ${guests}`,
       `${tr("Arriving", "الوصول")}: ${arrival ? timeLabel(arrival) : ""}`,
-      `${tr("The night", "الليلة")}: `,
+      `${tr("The night", "الليلة")}: ${dayText}`,
     ].join("\n");
     track("evening_send", { mood: mood ?? "", guests });
     sendToCovy(message);
@@ -163,22 +199,51 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
           <Reveal>
             <p className="flex items-center gap-2.5 text-[11px] uppercase tracking-[0.22em] mb-6" style={{ color: brand.accent }}>
               <Sparkle size={10} color={brand.accent} />
-              {tr("Plan your evening", "خطّط لسهرتك")}
+              {received ? tr("Your invitation", "دعوتك") : tr("Plan your evening", "خطّط لسهرتك")}
             </p>
           </Reveal>
           <h2 className="leading-[1.02] tracking-[-0.03em]" style={{ color: ui.text }}>
-            <Kinetic variant="curtain" stagger={0.04} text={tr("Tell us the mood.", "قل لنا المزاج،")} className="block font-playfair italic text-4xl sm:text-5xl md:text-6xl" />
-            <Kinetic variant="curtain" stagger={0.04} delay={0.18} text={tr("We'll write the evening.", "ونكتب نحن السهرة.")} className="block text-4xl sm:text-5xl md:text-6xl tracking-[-0.045em]" />
+            <Kinetic key={received ? "r1" : "b1"} variant="curtain" stagger={0.04} text={received ? (to ? `${to},` : tr("An evening,", "سهرة،")) : tr("Tell us the mood.", "قل لنا المزاج،")} className="block font-playfair italic text-4xl sm:text-5xl md:text-6xl" />
+            <Kinetic key={received ? "r2" : "b2"} variant="curtain" stagger={0.04} delay={0.18} text={received ? tr("you're invited.", "أنت مدعوّ.") : tr("We'll write the invitation.", "ونكتب نحن الدعوة.")} className="block text-4xl sm:text-5xl md:text-6xl tracking-[-0.045em]" />
           </h2>
           <Reveal delay={0.1}>
             <p className="mt-6 max-w-md text-[15px] leading-relaxed" style={{ color: ui.textMuted }}>
-              {tr(
-                "Three choices and COVY writes you a card. Keep it, or send it over and we'll hold the table.",
-                "ثلاثة اختيارات، ويكتب لك كوفي بطاقة. احتفظ بها، أو أرسلها لنا ونحجز لك الطاولة.",
-              )}
+              {received
+                ? from
+                  ? tr(`${from} planned an evening at COVY and saved you a seat. The card has the details.`, `${from} رتّب سهرة في كوفي وحجز لك مكانًا. التفاصيل في البطاقة.`)
+                  : tr("Someone planned an evening at COVY and saved you a seat. The card has the details.", "هناك من رتّب سهرة في كوفي وحجز لك مكانًا. التفاصيل في البطاقة.")
+                : tr(
+                    "Pick the evening, add a name, and COVY writes a card. Send it to anyone on WhatsApp, Instagram, Messages or Snapchat, or keep it as an image.",
+                    "اختر السهرة وأضف الاسم، ويكتب لك كوفي بطاقة. أرسلها لمن تشاء على واتساب أو إنستجرام أو الرسائل أو سناب شات، أو احتفظ بها كصورة.",
+                  )}
             </p>
           </Reveal>
 
+          {received && (
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <a
+                href={whatsappLink(yesText, "")}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => track("invite_yes", { brand: "covy" })}
+                className="min-h-[44px] inline-flex items-center gap-2 text-sm font-medium px-7 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
+                style={{ background: NAVY, color: GREIGE }}
+              >
+                <Check size={15} />
+                {tr("Say yes on WhatsApp", "وافق عبر واتساب")}
+              </a>
+              <button
+                type="button"
+                onClick={reset}
+                className="min-h-[44px] inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full border"
+                style={{ borderColor: "rgba(38,45,63,.28)", color: ui.text }}
+              >
+                {tr("Plan one of your own", "رتّب سهرتك أنت")}
+              </button>
+            </div>
+          )}
+
+          {!received && (
           <Reveal delay={0.14}>
             <div className="mt-10 grid gap-8">
               <div role="group" aria-labelledby="cv-mood-l">
@@ -254,6 +319,65 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
                 </div>
               </div>
 
+              <div role="group" aria-labelledby="cv-day-l">
+                <span id="cv-day-l" className={groupLabel} style={{ color: ui.textMuted }}>
+                  {tr("Which night", "أي ليلة")}
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {[0, 1].map((off) => (
+                    <button
+                      key={off}
+                      type="button"
+                      aria-pressed={day === isoDay(off)}
+                      onClick={() => setDay(isoDay(off))}
+                      className="cv-chip min-h-[44px] px-4 sm:px-5 rounded-full border text-sm"
+                      style={chip(day === isoDay(off))}
+                    >
+                      {off === 0 ? tr("Tonight", "الليلة") : tr("Tomorrow", "غدًا")}
+                    </button>
+                  ))}
+                  <label
+                    className="cv-chip relative min-h-[44px] inline-flex items-center px-4 sm:px-5 rounded-full border text-sm cursor-pointer"
+                    style={chip(day !== isoDay(0) && day !== isoDay(1))}
+                  >
+                    <span>{day !== isoDay(0) && day !== isoDay(1) ? dayLabel(day, ar) : tr("Another night", "ليلة أخرى")}</span>
+                    <input
+                      type="date"
+                      min={isoDay(0)}
+                      value={day}
+                      onChange={(e) => e.target.value && setDay(e.target.value)}
+                      aria-label={tr("Pick a date", "اختر التاريخ")}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2 max-w-lg">
+                <label className="block">
+                  <span className={groupLabel} style={{ color: ui.textMuted }}>{tr("Who is it for", "إلى مَن")}</span>
+                  <input
+                    value={to}
+                    onChange={(e) => setTo(e.target.value.slice(0, 24))}
+                    placeholder={tr("Their name (optional)", "الاسم (اختياري)")}
+                    autoComplete="off"
+                    className="w-full bg-transparent border-b py-2.5 text-[15px] outline-none"
+                    style={{ borderColor: "rgba(38,45,63,.28)", color: ui.text }}
+                  />
+                </label>
+                <label className="block">
+                  <span className={groupLabel} style={{ color: ui.textMuted }}>{tr("From", "مِن")}</span>
+                  <input
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value.slice(0, 24))}
+                    placeholder={tr("Your name (optional)", "اسمك (اختياري)")}
+                    autoComplete="given-name"
+                    className="w-full bg-transparent border-b py-2.5 text-[15px] outline-none"
+                    style={{ borderColor: "rgba(38,45,63,.28)", color: ui.text }}
+                  />
+                </label>
+              </div>
+
               <div className="flex flex-wrap items-center gap-4">
                 <Magnetic>
                   <button
@@ -264,7 +388,7 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
                     style={{ background: brand.accent, color: brand.accentText, opacity: ready ? 1 : 0.55 }}
                   >
                     <Sparkle size={11} color="currentColor" />
-                    {open ? tr("Rewrite my card", "أعد كتابة البطاقة") : tr("Write my evening", "اكتب سهرتي")}
+                    {tr("Write the invitation", "اكتب الدعوة")}
                   </button>
                 </Magnetic>
                 {!ready && (
@@ -275,6 +399,7 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
               </div>
             </div>
           </Reveal>
+          )}
         </div>
 
         {/* The card: its cover first, the written side once composed. */}
@@ -312,7 +437,7 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
                   <Sparkle size={7} color={GREIGE} />
                 </div>
                 <p className="mt-6 text-sm max-w-[240px] leading-relaxed" style={{ color: "rgba(220,212,207,.62)" }}>
-                  {tr("Your card will be written here.", "ستُكتب بطاقتك هنا.")}
+                  {tr("Your invitation will be written here.", "ستُكتب دعوتك هنا.")}
                 </p>
               </div>
 
@@ -327,8 +452,13 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
                 <div className="cv-foil" />
                 <img src={monogram} alt="" aria-hidden className="cv-card-line relative mx-auto w-14 h-auto" style={{ transitionDelay: "0.55s" }} />
                 <p className="cv-card-line relative mt-5 text-[10px] uppercase tracking-[0.34em]" style={{ color: "rgba(220,212,207,.72)", transitionDelay: "0.65s" }}>
-                  {tr("An evening at COVY", "سهرة في كوفي")}
+                  {copy?.eyebrow ?? tr("An evening at COVY", "سهرة في كوفي")}
                 </p>
+                {copy?.forLine && (
+                  <p className="cv-card-line relative mt-3 font-playfair italic text-lg" style={{ color: "#7E98AE", transitionDelay: "0.7s" }}>
+                    {copy.forLine}
+                  </p>
+                )}
                 <h3 className="cv-card-line relative mt-4 font-playfair italic text-[34px] sm:text-[40px] leading-[1.08]" style={{ color: GLOW, transitionDelay: "0.75s" }}>
                   {title}
                 </h3>
@@ -344,39 +474,47 @@ export default function CovyEvening({ brand }: { brand: Brand }) {
                     </p>
                   ))}
                 </div>
+                {copy?.fromLine && (
+                  <p className="cv-card-line relative mt-auto pt-6 font-playfair italic text-xl" style={{ color: GLOW, transitionDelay: "1.25s" }}>
+                    {copy.fromLine}
+                  </p>
+                )}
                 <div
-                  className="cv-card-line relative mt-auto pt-8 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.24em] tabular-nums"
+                  className={`cv-card-line relative ${copy?.fromLine ? "pt-4" : "mt-auto pt-8"} flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] uppercase tracking-[0.2em] tabular-nums`}
                   style={{ color: "rgba(220,212,207,.7)", transitionDelay: "1.35s" }}
                 >
-                  <span>{guestWord(guests)}</span>
+                  <span>{dayText}</span>
                   <Sparkle size={6} color={GREIGE} />
                   <span>{arrival ? timeLabel(arrival) : ""}</span>
+                  <Sparkle size={6} color={GREIGE} />
+                  <span>{guestWord(guests)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className={`mt-6 flex flex-wrap justify-center gap-3 transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`} aria-hidden={!open}>
-            <button
-              type="button"
-              onClick={send}
-              tabIndex={open ? 0 : -1}
-              className="min-h-[44px] inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full transition-transform hover:scale-[1.03] active:scale-95"
-              style={{ background: NAVY, color: GREIGE }}
-            >
-              {tr("Send this to COVY", "أرسلها إلى كوفي")}
-              <ArrowRight size={15} className="rtl:-scale-x-100" />
-            </button>
-            <button
-              type="button"
-              onClick={reset}
-              tabIndex={open ? 0 : -1}
-              className="min-h-[44px] inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full border transition-colors"
-              style={{ borderColor: "rgba(38,45,63,.28)", color: ui.text }}
-            >
-              <RotateCcw size={14} />
-              {tr("Start again", "ابدأ من جديد")}
-            </button>
+          <div className={`mt-7 transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`} aria-hidden={!open}>
+            <InviteActions
+              brand="covy"
+              image={image}
+              fileName="covy-invitation.png"
+              text={copy?.shareText ?? ""}
+              url={data ? inviteUrl(data) : ""}
+              active={open}
+              colors={{ solidBg: NAVY, solidFg: GREIGE, line: "rgba(38,45,63,.28)", fg: ui.text, muted: ui.textMuted }}
+            />
+            {!received && (
+              <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2">
+                <button type="button" onClick={send} tabIndex={open ? 0 : -1} className="min-h-[44px] inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4" style={{ color: ui.text }}>
+                  {tr("Hold this table with COVY", "احجز هذه الطاولة لدى كوفي")}
+                  <ArrowRight size={15} className="rtl:-scale-x-100" />
+                </button>
+                <button type="button" onClick={reset} tabIndex={open ? 0 : -1} className="min-h-[44px] inline-flex items-center gap-2 text-sm" style={{ color: ui.textMuted }}>
+                  <RotateCcw size={14} />
+                  {tr("Start again", "ابدأ من جديد")}
+                </button>
+              </div>
+            )}
           </div>
         </Reveal>
       </div>

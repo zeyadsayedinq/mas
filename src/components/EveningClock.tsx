@@ -27,34 +27,49 @@ export default function EveningClock() {
     const t = time.current;
     const root = document.querySelector<HTMLElement>("[data-covy-root]");
     if (!el || !t) return;
+    // Everything that reads --cv-dusk: the greige sections and the moon.
+    const duskTargets = root
+      ? [...root.querySelectorAll<HTMLElement>('[style*="--cv-dusk"]'), ...el.querySelectorAll<HTMLElement | SVGElement>(".cv-clock-moon")]
+      : [];
     let raf = 0;
     let lastDusk = -1;
     let lastTime = "";
     let formInView = false;
     const phone = window.matchMedia("(max-width: 639px)");
 
+    function onScroll() {
+      if (!raf) raf = requestAnimationFrame(update);
+    }
+
+    // Page and hero heights are measured when they change, not on every
+    // scroll frame, so scrolling never forces a layout.
+    let max = 1;
+    let heroH = 400 / 0.6;
+    const measure = () => {
+      max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const hero = document.getElementById("top");
+      if (hero) heroH = hero.offsetHeight;
+    };
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => { measure(); onScroll(); }) : null;
+    ro?.observe(document.body);
+
     const update = () => {
       raf = 0;
-      const doc = document.documentElement;
-      const max = Math.max(1, doc.scrollHeight - window.innerHeight);
       const p = Math.min(1, Math.max(0, window.scrollY / max));
-      const hero = document.getElementById("top");
-      const past = hero ? window.scrollY > hero.offsetHeight * 0.6 : window.scrollY > 400;
+      const past = window.scrollY > heroH * 0.6;
       // Five-minute steps read like a clock and keep the updates rare.
       const label = fmt(START + Math.round((p * SPAN) / 5) * 5);
       if (label !== lastTime) {
         t.textContent = label;
         lastTime = label;
       }
-      const dusk = Math.round(p * 50) / 50;
-      if (dusk !== lastDusk && root) {
-        root.style.setProperty("--cv-dusk", String(dusk));
+      const dusk = Math.round(p * 20) / 20;
+      if (dusk !== lastDusk) {
+        for (const d of duskTargets) (d as HTMLElement).style.setProperty("--cv-dusk", String(dusk));
         lastDusk = dusk;
       }
       el.classList.toggle("is-on", past && !(phone.matches && formInView));
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
     };
 
     const form = document.getElementById("contact");
@@ -72,6 +87,7 @@ export default function EveningClock() {
     return () => {
       cancelAnimationFrame(raf);
       io?.disconnect();
+      ro?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
@@ -80,8 +96,8 @@ export default function EveningClock() {
   return (
     <div ref={pill} className="cv-clock" aria-hidden>
       <div
-        className="flex items-center gap-2 h-9 ps-2.5 pe-3.5 rounded-full backdrop-blur-md"
-        style={{ background: "rgba(38,45,63,.82)", border: "1px solid rgba(220,212,207,.2)", color: "#DCD4CF", boxShadow: "0 10px 24px -14px rgba(0,0,0,.5)" }}
+        className="flex items-center gap-2 h-9 ps-2.5 pe-3.5 rounded-full"
+        style={{ background: "rgba(38,45,63,.94)", border: "1px solid rgba(220,212,207,.2)", color: "#DCD4CF", boxShadow: "0 10px 24px -14px rgba(0,0,0,.5)" }}
       >
         <svg viewBox="0 0 24 24" width="16" height="16" className="cv-clock-moon" aria-hidden>
           <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="#DCD4CF" />

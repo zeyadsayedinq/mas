@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Dices, Lock, LockOpen, RotateCcw, ArrowRight } from "lucide-react";
 import Kinetic from "./Kinetic";
 import { useLang } from "../i18n";
-import { useMenu, type MenuHit } from "../localize";
+import { useMenu, type MenuHit } from "../menuLocal";
 import { track } from "../track";
 import type { Brand } from "../brands";
 import "../styles/aroma-3d.css";

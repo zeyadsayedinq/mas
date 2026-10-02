@@ -43,8 +43,8 @@ export default function CovyDimmer({ value, onChange, className = "" }: CovyDimm
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-full ps-4 pe-3 backdrop-blur-md ${className}`}
-      style={{ background: "rgba(38,45,63,.72)", border: "1px solid rgba(220,212,207,.2)", color: "#DCD4CF" }}
+      className={`flex items-center gap-3 rounded-full ps-4 pe-3 ${className}`}
+      style={{ background: "rgba(38,45,63,.88)", border: "1px solid rgba(220,212,207,.2)", color: "#DCD4CF" }}
     >
       <label htmlFor={id} className="shrink-0 text-[10px] uppercase tracking-[0.22em] font-medium leading-tight">
         {tr("Lights", "الإضاءة")}

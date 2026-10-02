@@ -8,9 +8,11 @@
    --cv-dusk   0..1  how far down the page you are (greige sections deepen)
 --------------------------------------------------------------------------- */
 @property --cv-light { syntax: "<number>"; inherits: true; initial-value: 0.62; }
-@property --cv-dusk { syntax: "<number>"; inherits: true; initial-value: 0; }
+/* Not inherited: the clock writes it straight onto the few elements that read
+   it, so a scroll step restyles those elements and not the whole page. */
+@property --cv-dusk { syntax: "<number>"; inherits: false; initial-value: 0; }
 
-.cv-root { --cv-light: 0.62; --cv-dusk: 0; transition: --cv-light 0.7s cubic-bezier(.3,.7,.2,1); }
+.cv-root { --cv-light: 0.62; transition: --cv-light 0.7s cubic-bezier(.3,.7,.2,1); }
 
 /* The page warms as the lights go down: a candle-coloured glow from the
    floor and the ceiling, kept to the edges so it never sits on text. */

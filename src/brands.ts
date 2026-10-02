@@ -14,9 +14,9 @@
  *   F5EFE6 cream      4F6F52 sage
  */
 
-import aromaLogo from "./assets/brand/aroma-logo.png";
-import aromaMark from "./assets/brand/aroma-icon.png";
-import covyLogo from "./assets/brand/covy-wordmark.png";
+import aromaLogo from "./assets/brand/aroma-logo.webp";
+import aromaMark from "./assets/brand/aroma-icon.webp";
+import covyLogo from "./assets/brand/covy-wordmark.webp";
 import covyMark from "./assets/brand/covy-mark.png";
 import masWordmark from "./assets/brand/mas-wordmark-cocoa.svg";
 import masWordmarkCream from "./assets/brand/mas-wordmark-cream.svg";

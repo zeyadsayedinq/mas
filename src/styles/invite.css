@@ -1,0 +1,6 @@
+/* Invitation builder (Aroma). */
+.ai-chip { transition: background-color .2s, color .2s, border-color .2s, transform .2s cubic-bezier(.16,1,.3,1); }
+.ai-chip:active { transform: scale(.96); }
+@keyframes aiPop { 0% { opacity: .35; transform: scale(.975); } 100% { opacity: 1; transform: none; } }
+.ai-pop { animation: aiPop .38s cubic-bezier(.16,1,.3,1) both; }
+@media (prefers-reduced-motion: reduce) { .ai-pop { animation: none; } .ai-chip { transition: none; } }

@@ -3,7 +3,7 @@ import { Search, X } from "lucide-react";
 import Reveal from "./Reveal";
 import Kinetic from "./Kinetic";
 import { useLang } from "../i18n";
-import { useMenu, type MenuHit } from "../localize";
+import { useMenu, type MenuHit } from "../menuLocal";
 import { track } from "../track";
 import type { MenuItem } from "../menu";
 import type { Brand } from "../brands";

@@ -57,9 +57,9 @@ export default function StickyReserve({ brand }: { brand: Brand }) {
 
   return (
     <div
-      className="lg:hidden fixed inset-x-0 bottom-0 z-[90] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-2.5 backdrop-blur-md"
+      className="lg:hidden fixed inset-x-0 bottom-0 z-[90] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-2.5"
       style={{
-        background: "rgba(255,255,255,0.92)",
+        background: "rgba(255,255,255,0.97)",
         borderTop: `1px solid ${brand.ui.line}`,
         transform: show ? "translateY(0)" : "translateY(110%)",
         transition: "transform 350ms cubic-bezier(0.16,1,0.3,1)",

@@ -3,7 +3,7 @@ import { ArrowRight, Beef, ChefHat, Citrus, Coffee, Croissant, Flame, Hand, Leaf
 import { Story3D } from "./Aroma3D";
 import { CoffeeCup, Feteer, Ribeye } from "./ProductArt";
 import { useLang } from "../i18n";
-import { useMenu } from "../localize";
+import { useMenu } from "../menuLocal";
 import { MENU } from "../menu";
 import { track } from "../track";
 import { useMediaQuery } from "../hooks/useMediaQuery";

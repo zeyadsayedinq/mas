@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import "./covy-art.css";
 
 /**
@@ -27,6 +27,26 @@ export interface CovyArtProps {
 /** A per-instance id prefix, safe inside url(#...). */
 function useUid() {
   return "ca" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+/**
+ * SVG animation runs on the main thread, so a drawing that is off screen is
+ * frozen until it comes back. One shared observer covers every drawing.
+ */
+let artObserver: IntersectionObserver | null = null;
+function useOffscreenPause() {
+  const ref = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    artObserver ??= new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.target.classList.toggle("ca-off", !e.isIntersecting)),
+      { rootMargin: "80px 0px" },
+    );
+    artObserver.observe(el);
+    return () => artObserver?.unobserve(el);
+  }, []);
+  return ref;
 }
 
 /** Class name only when motion is on. */
@@ -95,10 +115,11 @@ function Pillar({ h, id, cls }: { h: number; id: string; cls: (c: string) => str
  * The upper half is left open for the tile behind it.
  */
 export function CovyNightTable({ className, animate = true }: CovyArtProps) {
+  const art = useOffscreenPause();
   const id = useUid();
   const m = motion(animate);
   return (
-    <svg viewBox="0 0 600 420" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 600 420" ref={art} className={className} aria-hidden="true" focusable="false">
       <defs>
         <Lights id={id} />
       </defs>
@@ -219,10 +240,11 @@ export function CovyNightTable({ className, animate = true }: CovyArtProps) {
 
 /** "The bar": a coupe with a thin twist beside a layered highball. */
 export function CovyBarGlass({ className, animate = true }: CovyArtProps) {
+  const art = useOffscreenPause();
   const m = motion(animate);
   const still = animate ? undefined : 0.8;
   return (
-    <svg viewBox="0 0 320 220" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 320 220" ref={art} className={className} aria-hidden="true" focusable="false">
       <ellipse cx="116" cy="212" rx="44" ry="4.5" fill={NAVY} opacity=".3" />
       <ellipse cx="230" cy="212" rx="36" ry="4.5" fill={NAVY} opacity=".3" />
 
@@ -270,13 +292,14 @@ export function CovyBarGlass({ className, animate = true }: CovyArtProps) {
 
 /** "The kitchen": a plated dish, the cloche just lifted, steam getting out. */
 export function CovyKitchenPlate({ className, animate = true }: CovyArtProps) {
+  const art = useOffscreenPause();
   const id = useUid();
   const m = motion(animate);
   const steam = (d: string, delay: number) => (
     <path d={d} fill="none" stroke={GLOW} strokeWidth="2" strokeLinecap="round" className={m("ca-steam")} opacity={animate ? undefined : 0.55} style={animate ? { animationDelay: `${delay}s` } : undefined} />
   );
   return (
-    <svg viewBox="0 0 320 220" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 320 220" ref={art} className={className} aria-hidden="true" focusable="false">
       <defs>
         <clipPath id={`${id}d`}>
           <path d="M122,128C122,72 278,72 278,128Z" />
@@ -330,10 +353,11 @@ export function CovyKitchenPlate({ className, animate = true }: CovyArtProps) {
 
 /** "The room": an armchair in the corner and a floor lamp's pool of light. */
 export function CovyRoomLamp({ className, animate = true }: CovyArtProps) {
+  const art = useOffscreenPause();
   const id = useUid();
   const m = motion(animate);
   return (
-    <svg viewBox="0 0 320 220" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 320 220" ref={art} className={className} aria-hidden="true" focusable="false">
       <defs>
         <Lights id={id} />
       </defs>
@@ -387,10 +411,11 @@ export function CovyRoomLamp({ className, animate = true }: CovyArtProps) {
 
 /** A small standalone candle for accents. */
 export function CovyCandle({ className, animate = true }: CovyArtProps) {
+  const art = useOffscreenPause();
   const id = useUid();
   const m = motion(animate);
   return (
-    <svg viewBox="0 0 60 100" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 60 100" ref={art} className={className} aria-hidden="true" focusable="false">
       <defs>
         <Lights id={id} />
       </defs>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "../router";
 import { useLang } from "../i18n";
 import { track } from "../track";
 import { Menu, X, ArrowUpLeft, AtSign } from "lucide-react";
@@ -128,7 +128,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
     <>
       <nav
         className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between p-4 sm:px-6 sm:py-4 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-[max(1rem,env(safe-area-inset-top))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))]"
-        style={light ? { background: hexToRgba(brand.ui.bg, 0.9), backdropFilter: "blur(10px)", borderBottom: `1px solid ${brand.ui.line}` } : undefined}
+        style={light ? { background: hexToRgba(brand.ui.bg, 0.97), borderBottom: `1px solid ${brand.ui.line}` } : undefined}
       >
         <div className="flex items-center gap-3">
           <Link to={href(brand.path)} className="flex items-center gap-2" style={{ color: fg }} aria-label={brand.name}>
@@ -152,7 +152,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
         </div>
 
         <div
-          className="hidden lg:flex absolute left-1/2 -translate-x-1/2 backdrop-blur-md border rounded-full px-2 py-2 items-center gap-1"
+          className="hidden lg:flex absolute left-1/2 -translate-x-1/2 border rounded-full px-2 py-2 items-center gap-1"
           style={{ background: pillBg, borderColor: pillLine }}
         >
           {brand.nav.map((item, i) => (
@@ -206,7 +206,7 @@ export default function Nav({ brand, showParentLink = false, onLight }: NavProps
 
       {open && (
         <div
-          className="fixed inset-0 z-[110] backdrop-blur-sm lg:hidden flex flex-col overflow-y-auto overscroll-contain safe-top safe-bottom"
+          className="fixed inset-0 z-[110] lg:hidden flex flex-col overflow-y-auto overscroll-contain safe-top safe-bottom"
           style={{ background: light ? hexToRgba(brand.ui.bg, 0.97) : "rgba(0,0,0,0.94)" }}
         >
           <div className="flex items-center justify-between p-4">

@@ -1,3 +1,4 @@
+import { useSleepOffscreen } from "../hooks/useSleepOffscreen";
 import { useEffect } from "react";
 import Nav from "../components/Nav";
 import AromaHero from "../components/AromaHero";
@@ -7,6 +8,7 @@ import About from "../components/About";
 import AromaStory from "../components/AromaStory";
 import AromaRoulette from "../components/AromaRoulette";
 import MenuExplorer from "../components/MenuExplorer";
+import AromaInvite from "../components/AromaInvite";
 import ScrollMarquee from "../components/ScrollMarquee";
 import Desks from "../components/Desks";
 import Branches from "../components/Branches";
@@ -24,6 +26,7 @@ import { useBrand } from "../localize";
  * `/aroma/madinaty` is the same page, led by the Madinaty branch.
  */
 export default function AromaPage({ focus }: { focus?: "madinaty" } = {}) {
+  useSleepOffscreen();
   const brand = useBrand("aroma");
   const ui = brand.ui;
 
@@ -42,6 +45,7 @@ export default function AromaPage({ focus }: { focus?: "madinaty" } = {}) {
       <AromaStory brand={brand} />
       <AromaRoulette brand={brand} />
       <MenuExplorer brand={brand} />
+      <AromaInvite brand={brand} defaultBranch={focus ?? "madinaty"} />
       <ScrollMarquee brand={brand} />
       <ReelSpace brand={brand} />
       <Desks brand={brand} />

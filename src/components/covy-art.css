@@ -34,12 +34,15 @@
   50% { opacity: 0.9; transform: scale(1); }
 }
 
-.ca-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: caFlicker 2.4s ease-in-out infinite; }
-.ca-halo { transform-box: fill-box; transform-origin: 50% 50%; animation: caHalo 2.4s ease-in-out infinite; }
-.ca-breathe { animation: caBreathe 6.5s ease-in-out infinite; }
-.ca-steam { opacity: 0; animation: caSteam 4.2s ease-out infinite; }
-.ca-glint { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: caGlint 7s ease-in-out infinite; }
-.ca-twinkle { transform-box: fill-box; transform-origin: 50% 50%; animation: caTwinkle 5s ease-in-out infinite; }
+/* Movement inside an SVG is redrawn by the browser rather than by the graphics
+   card, so these run in small steps (a few a second, which is how a flame and
+   a lamp glow read anyway) instead of sixty redraws a second. */
+.ca-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: caFlicker 2.4s steps(3, end) infinite; }
+.ca-halo { transform-box: fill-box; transform-origin: 50% 50%; animation: caHalo 2.4s steps(4, end) infinite; }
+.ca-breathe { animation: caBreathe 6.5s steps(12, end) infinite; }
+.ca-steam { opacity: 0; animation: caSteam 4.2s steps(14, end) infinite; }
+.ca-glint { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: caGlint 7s steps(6, end) infinite; }
+.ca-twinkle { transform-box: fill-box; transform-origin: 50% 50%; animation: caTwinkle 5s steps(10, end) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   .ca-flame, .ca-halo, .ca-breathe, .ca-steam, .ca-glint, .ca-twinkle { animation: none; }
@@ -57,3 +60,6 @@
 .ca-candle { opacity: calc(1.25 - var(--cv-light, .62) * .6); }
 .ca-shade-dim { opacity: calc((1 - var(--cv-light, .62)) * .42); }
 .ca-bulb { opacity: calc(.45 + var(--cv-light, .62) * .6); }
+
+/* Frozen while off screen (see useOffscreenPause in CovyArt.tsx). */
+.ca-off .ca-flame, .ca-off .ca-halo, .ca-off .ca-breathe, .ca-off .ca-steam, .ca-off .ca-glint, .ca-off .ca-twinkle { animation-play-state: paused; }

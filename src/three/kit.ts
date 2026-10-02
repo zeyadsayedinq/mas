@@ -226,6 +226,35 @@ export function fitCamera(camera: THREE.PerspectiveCamera, pts: THREE.Vector3[],
   return { target: target.clone(), dist, dir };
 }
 
+/** Wait for the browser to have a spare moment, so heavy work never lands in one long block. */
+export const breathe = () =>
+  new Promise<void>((done) => {
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+    if (ric) ric(() => done(), { timeout: 120 });
+    else setTimeout(done, 16);
+  });
+
+/**
+ * Keeps the stage smooth on slower phones: if frames keep arriving late, the
+ * drawing resolution steps down a notch (never below the screen's own 1x) and stays there.
+ * Returns a function to call once per frame with the real frame time.
+ */
+export function makeGovernor(renderer: THREE.WebGLRenderer, relayout: () => void) {
+  let ema = 16, slow = 0, warm = 0;
+  let level = renderer.getPixelRatio();
+  return (ms: number) => {
+    if (warm++ < 20 || ms > 250) return; // skip start-up hitches and tab switches
+    ema += (ms - ema) * 0.1;
+    slow = ema > 26 ? slow + 1 : Math.max(0, slow - 1);
+    if (slow > 50 && level > 1) {
+      level = Math.max(1, level - 0.25);
+      renderer.setPixelRatio(level);
+      relayout();
+      slow = 0; ema = 16; warm = 0;
+    }
+  };
+}
+
 /** Dispose every geometry, material and owned texture under the scene. */
 export function disposeScene(scene: THREE.Scene) {
   scene.traverse((o) => {

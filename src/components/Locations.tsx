@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../router";
 import { ArrowRight, MapPin, Navigation, Phone } from "lucide-react";
 import Reveal from "./Reveal";
 import Eyebrow from "./Eyebrow";
